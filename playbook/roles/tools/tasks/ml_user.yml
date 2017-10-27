@@ -1,0 +1,26 @@
+- name: Create a non root user(ml)
+  user:
+    name: ml
+    group: ml
+    append: yes
+
+- name: Allow ml to have passwordless sudo
+  lineinfile:
+    dest: /etc/sudoers
+    state: present
+    line: 'ml ALL=(ALL) NOPASSWD: ALL'
+
+- name: Create .ssh folder
+  file:
+    path: ~ml/.ssh
+    state: directory
+    owner: ml
+    group: ml
+    mode: 0700
+
+
+- name: Set authorized key
+  authorized_key:
+    user: ml
+    state: present
+    key: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"

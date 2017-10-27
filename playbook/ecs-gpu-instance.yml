@@ -1,0 +1,7 @@
+---
+- hosts: all
+  become: true
+  become_method: sudo
+  roles:
+    - { role: tools, tags: tools }
+    - { role: libs, tags: libs }

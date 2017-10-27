@@ -1,0 +1,18 @@
+- name: Install git
+  apt: pkg=git state=installed update_cache=true
+
+- name: Add git alias
+  become: yes
+  become_user: ml
+  git_config:
+    name: alias.{{item.alias}}
+    scope: global
+    value: "{{item.full}}"
+  with_items:
+    - alias: ci
+      full: commit --verbose
+    - alias: co
+      full: checkout
+    - alias: st
+      full: status
+
