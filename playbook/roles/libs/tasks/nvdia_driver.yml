@@ -1,0 +1,40 @@
+---
+# Reference:
+# http://www.jianshu.com/p/35c7fde85968
+# https://github.com/amarao/ansible-nvidia-blob-install/blob/master/tasks/main.yml
+- name: remove nouveau driver
+  shell: rmmod nouveau
+  register: nouveau_remove
+  changed_when: '{{nouveau_remove.rc != 0}}'
+  failed_when: '{{"in use" in nouveau_remove.stderr}}'
+
+- name: Blacklist nouveau driver
+  copy: dest=/etc/modprobe.d/blacklist-nouveau.conf content='blacklist nouveau' force=yes
+  register: blacklist_changed
+
+- name: Update system with nouveau disabled
+  shell: update-initramfs -u
+  when: blacklist_changed|changed
+
+
+
+# http://tleyden.github.io/blog/2014/10/25/cuda-6-dot-5-on-aws-gpu-instance-running-ubuntu-14-dot-04/
+- name: Install linux packages
+  apt: pkg=linux-image-extra-virtual state=installed
+
+- name: Restart server
+  shell: sleep 2 && /sbin/shutdown -r now
+  async: 1
+  poll: 0
+  ignore_errors: true
+
+- name: Wait for server to restart
+  local_action:
+    module: wait_for host={{ inventory_hostname }} delay=30 timeout=120 state=started
+  become: false
+
+- name: Download latest NVIDA drivers
+  get_url: url={{ nvidia_driver }} dest=/tmp/driver.run
+
+- name: Install the NVIDIA driver
+  shell: sh /tmp/driver.run -q -a -n -s
