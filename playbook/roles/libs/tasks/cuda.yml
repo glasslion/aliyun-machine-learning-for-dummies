@@ -1,0 +1,57 @@
+---
+- name: Check if cuda is installed
+  stat:
+    path: /usr/local/cuda/bin
+  register: installed
+  become_user: ml
+
+- name: Check if cuda is downloaded
+  stat:
+    path: /mnt/ml/cache/cuda.deb
+  register: downloaded
+  become_user: ml
+
+- name: Download latest CUDA deb packages
+  get_url: url=http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64/cuda-repo-ubuntu1604_9.0.176-1_amd64.deb
+           dest=/mnt/ml/cache/cuda.deb
+  when: downloaded.stat.exists == False
+
+- name: Add CUDA deb
+  shell: dpkg -i /mnt/ml/cache/cuda.deb
+  when: installed.stat.exists == False
+
+- name: Install build dependencies
+  apt: name={{item}} update_cache=yes
+  with_items:
+    - build-essential
+    - dkms
+    - linux-generic
+
+- name: Install cuda package
+  apt: name=cuda state=present allow_unauthenticated=yes
+  when: installed.stat.exists == False
+
+- name: Adding cuda bin to PATH
+  lineinfile: dest=~/.bashrc line="export PATH=$PATH:/usr/local/cuda/bin"
+  become_user: ml
+
+- name: Adding cuda lib64 to LD_LIBRARY_PATH
+  lineinfile: dest=~/.bashrc line="export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64"
+
+- name: Adding cuda root to CUDA_ROOT
+  lineinfile: dest=~/.bashrc line="export CUDA_ROOT=/usr/local/cuda"
+  become_user: ml
+
+- name: Restart server
+  shell: sleep 2 && /sbin/shutdown -r now
+  async: 1
+  poll: 0
+  ignore_errors: true
+  become_user: root
+  when: installed.stat.exists == False
+
+- name: Wait for server to restart
+  local_action:
+    module: wait_for host={{ inventory_hostname }} port=22 delay=10 timeout=120 state=started
+  become: false
+  when: installed.stat.exists == False

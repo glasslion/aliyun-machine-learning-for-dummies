@@ -2,21 +2,25 @@
 # Reference:
 # http://www.jianshu.com/p/35c7fde85968
 # https://github.com/amarao/ansible-nvidia-blob-install/blob/master/tasks/main.yml
-- name: remove nouveau driver
-  shell: rmmod nouveau
-  register: nouveau_remove
-  changed_when: '{{nouveau_remove.rc != 0}}'
-  failed_when: '{{"in use" in nouveau_remove.stderr}}'
+# - name: remove nouveau driver
+#   shell: rmmod nouveau
+#   register: nouveau_remove
+#   changed_when: '{{nouveau_remove.rc != 0}}'
+#   failed_when: '{{"in use" in nouveau_remove.stderr}}'
 
-- name: Blacklist nouveau driver
-  copy: dest=/etc/modprobe.d/blacklist-nouveau.conf content='blacklist nouveau' force=yes
-  register: blacklist_changed
+# - name: Blacklist nouveau driver
+#   copy: dest=/etc/modprobe.d/blacklist-nouveau.conf content='blacklist nouveau' force=yes
+#   register: blacklist_changed
+
+# - name: Update system with nouveau disabled
+#   shell: update-initramfs -u
+#   when: blacklist_changed|changed
+
+- name: Blacklist processes nouveau
+  kernel_blacklist: name=nouveau state=present
 
 - name: Update system with nouveau disabled
   shell: update-initramfs -u
-  when: blacklist_changed|changed
-
-
 
 # http://tleyden.github.io/blog/2014/10/25/cuda-6-dot-5-on-aws-gpu-instance-running-ubuntu-14-dot-04/
 - name: Install linux packages
@@ -33,8 +37,18 @@
     module: wait_for host={{ inventory_hostname }} delay=30 timeout=120 state=started
   become: false
 
+
+- name: Check if NVIDA drivers is downloaded
+  stat:
+    path: /mnt/ml/cache/nvdia_driver.run
+  register: downloaded
+  become_user: ml
+
 - name: Download latest NVIDA drivers
-  get_url: url={{ nvidia_driver }} dest=/tmp/driver.run
+  get_url:
+    url: http://us.download.nvidia.com/XFree86/Linux-x86_64/375.20/NVIDIA-Linux-x86_64-375.20.run
+    dest: /mnt/ml/cache/nvdia_driver.run
+  when: downloaded.stat.exists == False
 
 - name: Install the NVIDIA driver
-  shell: sh /tmp/driver.run -q -a -n -s
+  shell: sh /mnt/ml/cache/nvdia_driver.run -q -a -n -s

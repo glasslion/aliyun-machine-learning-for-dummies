@@ -1,0 +1,14 @@
+
+---
+# Optmize P2 according to http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/accelerated-computing-instances.html#optimize_gpu
+- name: Configure the GPU settings to be persistent
+  shell: nvidia-smi -pm 1
+
+- name: Disable the autoboost feature for all GPUs on the instance.
+  shell: nvidia-smi --auto-boost-default=0
+
+# - name: Set all GPU clock speeds to their maximum frequency.
+#   shell: nvidia-smi -ac 2505,875
+
+# - name: Killing libdc1394 warning
+#   file: src=/dev/null dest=/dev/raw1394 state=link

@@ -1,0 +1,16 @@
+---
+- name: Install nb_conda
+  command: /mnt/ml/libs/anaconda3/bin/conda install -y jupyter nb_conda -c conda-forge
+  become_user: ml
+
+- name: Enable conda kernels
+  command: /mnt/ml/libs/anaconda3/bin/python -m nb_conda_kernels.install --enable
+  become_user: ml
+
+- name: Copy jupyter notebook config file to instance
+  copy: src=jupyter_notebook_config.py dest=~/.jupyter/
+  become_user: ml
+
+- name: Create cerificate and key
+  shell: openssl req -x509 -nodes -days 365 -newkey rsa:1024 -keyout ~/.jupyter/mykey.key -out ~/.jupyter/mycert.pem -subj "/C=NL"
+  become_user: ml

@@ -1,0 +1,50 @@
+---
+- name: Check if anaconda is installed
+  stat:
+    path: /mnt/ml/libs/anaconda3
+  register: installed
+  become_user: ml
+
+- name: Check if anaconda is downloaded
+  stat:
+    path: /mnt/ml/cache/anaconda3.sh
+  register: downloaded
+  become_user: ml
+
+- name: Download anaconda installer
+  get_url: url=https://repo.continuum.io/archive/Anaconda3-5.0.1-Linux-x86_64.sh
+           dest=/mnt/ml/cache/anaconda3.sh
+  become_user: ml
+  when: downloaded.stat.exists == False
+
+- name: Install anaconda3 (default folder)
+  shell: bash /mnt/ml/cache/anaconda3.sh -b -p/mnt/ml/libs/anaconda3
+  become_user: ml
+  when: installed.stat.exists == False
+
+- name: Add anaconda3 to the PATH
+  lineinfile: dest=~/.bashrc line="export PATH=/mnt/ml/libs/anaconda3/bin:$PATH"
+  become_user: ml
+
+- name: Update conda
+  shell: /mnt/ml/libs/anaconda3/bin/conda update conda -y --force
+  become_user: ml
+
+- name: Check if anapy36 env is installed
+  stat:
+    path: /mnt/ml/libs/anaconda3/envs/py36
+  register: py36
+  become: false
+
+- name: Create anaconda python 3.6 env
+  shell: /mnt/ml/libs/anaconda3/bin/conda create -y -n py36 python=3.6 anaconda
+  become: false
+  when: py36.stat.exists == False
+
+- name: Upgrating setuptools
+  shell: /usr/bin/yes | /mnt/ml/libs/anaconda3/envs/py36/bin/pip install -q --upgrade setuptools
+  ignore_errors: yes
+  become: false
+  when: py36.stat.exists == False
+
+
