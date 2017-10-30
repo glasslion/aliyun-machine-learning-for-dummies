@@ -1,0 +1,24 @@
+- name: Mount external drive
+  mount:
+    path:  /mnt/ml
+    src:  /dev/vdc1
+    fstype: ext4
+    state: mounted
+
+- name: Change mounted directory owner
+  file:
+    path:  /mnt/ml
+    owner: ml
+    group: ml
+    recurse: yes
+
+- name: Create common directories
+  file:
+    path:  "{{ item }}"
+    state: directory
+    owner: ml
+    group: ml
+  with_items:
+    - /mnt/ml/cache
+    - /mnt/ml/libs
+    - /mnt/ml/working

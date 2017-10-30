@@ -1,7 +1,7 @@
 - name: Create a non root user(ml)
   user:
     name: ml
-    group: ml
+    shell: /bin/bash
     append: yes
 
 - name: Allow ml to have passwordless sudo
@@ -24,3 +24,11 @@
     user: ml
     state: present
     key: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
+
+- name: Copy SSH public key
+  copy: src=id_rsa.pub dest=~ml/.ssh/id_rsa.pub
+  become_user: ml
+
+- name: Copy SSH private key
+  copy: src=id_rsa dest=~ml/.ssh/id_rsa mode=600
+  become_user: ml

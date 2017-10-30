@@ -1,4 +1,6 @@
 ---
  - { import_tasks: ml_user.yml, tags: 'ml_user' }
+ - { import_tasks: mount.yml, tags: 'mount' }
  - { import_tasks: tmux.yml, tags: 'tmux' }
  - { import_tasks: git.yml, tags: 'git' }
+ - { import_tasks: miscellaneous.yml, tags: 'misc' }
