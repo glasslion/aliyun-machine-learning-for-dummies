@@ -21,7 +21,7 @@ def main(interactive):
     config.obtain_secret('access_key_id')
     config.obtain_secret('access_key_secret')
     if interactive:
-        config.prompt()
+        config.config_via_prompt()
     else:
         config.load()
 
@@ -33,14 +33,15 @@ def main(interactive):
     if should_create_new:
         create_instance(config)
 
-    # allocate_public_ip(config)
-    # attach_disk(config)
+    allocate_public_ip(config)
+    attach_disk(config)
     wait_for_instance_status(config, "Stopped")
     start_instance(config)
     save_instance_info(config)
 
 
 def create_instance(config):
+    click.echo(click.style("正在创建实例 ...", fg="green"))
     client = config.create_api_client()
     req = CreateInstanceRequest.CreateInstanceRequest()
 
@@ -55,18 +56,22 @@ def create_instance(config):
     return instance_id
 
 def allocate_public_ip(config):
+    click.echo(click.style("正在分配公网 IP ...", fg="green"))
     client = config.create_api_client()
     req = AllocatePublicIpAddressRequest.AllocatePublicIpAddressRequest()
     req.set_InstanceId(config.get('InstanceId'))
     result = do_action(client, req)
 
+
 def start_instance(config):
+    click.echo(click.style("正在启动实例 ...", fg="green"))
     client = config.create_api_client()
     req = StartInstanceRequest.StartInstanceRequest()
     req.set_InstanceId(config.get('InstanceId'))
     result = do_action(client, req)
 
 def attach_disk(config):
+    click.prompt(click.style("正在挂载数据盘 ...", fg="green"))
     client = config.create_api_client()
     req = AttachDiskRequest.AttachDiskRequest()
     req.set_InstanceId(config.get('InstanceId'))

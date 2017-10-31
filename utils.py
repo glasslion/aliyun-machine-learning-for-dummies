@@ -9,11 +9,14 @@ import time
 import click
 from aliyunsdkcore.client import AcsClient
 from aliyunsdkecs.request.v20140526 import (DescribeDisksRequest,
+                                            CreateDiskRequest,
                                             DescribeImagesRequest,
                                             DescribeInstancesRequest,
                                             DescribeInstanceTypesRequest,
                                             DescribeKeyPairsRequest,
                                             DescribeRegionsRequest,
+                                            DescribeSnapshotsRequest,
+                                            DescribeZonesRequest,
                                             DescribeSecurityGroupsRequest)
 
 CONFIG_FILE = 'config.json'
@@ -56,6 +59,10 @@ class Config(object):
                 'Please enter your {}'.format(human_name), type=str, hide_input=True)
 
     def set(self, key, value):
+        """
+        Set a key/value config. If the key is a string, it acts like a dict.
+        If the given key is a list or tuple, it will set the key hierarchically.
+        """
         if isinstance(key, (list, tuple)):
             node = self._config
             for k in key[:-1]:
@@ -82,10 +89,14 @@ class Config(object):
         else:
             return self._config.pop(key, default)
 
-    def prompt(self):
+    def config_via_prompt(self):
+        """
+        Get ecs configs via commandline prompts
+        """
         self.load()
 
-        # We need a default region id to initialize the api client, then query other available regions
+        # We need a default region id to initialize the api client,
+        # then query other available regions
         default_region_id = 'cn-hangzhou'
 
         client = client = AcsClient(
@@ -93,99 +104,35 @@ class Config(object):
             self._secrets['access_key_secret'],
             default_region_id,
         )
+        RegionIdSelect().show(config=self, client=client)
+        InstanceTypeSelect().show(config=self)
+        SecurityGroupsSelect().show(config=self)
+        msg = "ECS实例自带的磁盘， 在实例被删除后， 也会被删除。为了保存你的工作， 你需要额外再挂载一块磁盘。\
+你可以选择使用你账户里现有的一块磁盘(e)，或者是使用快照创建一块新的磁盘(s), [e/s]"
+        answer = click.prompt(msg).lower()
+        if answer == 'e':
+            DisksSelect().show(config=self)
+        else:
+            SnapshotsSelect().show(config=self)
+        KeyPairsSelect().show(config=self)
+        ImagesSelect().show(config=self)
 
-        # Regions
-        req = DescribeRegionsRequest.DescribeRegionsRequest()
-        result = do_action(client, req)
-        items = result['Regions']['Region']
-        select_list = '\n'.join('[{}] - {}({})'.format(
-            idx, item['LocalName'], item['RegionId']
-        ) for idx, item in enumerate(items))
-        idx = click.prompt('Please select your region: \n{}\n'.format(select_list), type=int)
-        RegionId = items[idx]['RegionId']
-        self._config['RegionId'] = RegionId
+        InstanceName = click.prompt('请输入你的实例名称（便于标识实例）:', default='ecs-ml-01', type=str)
+        self.set(['CreateInstanceParams','InstanceName'], InstanceName)
 
-        client = client = AcsClient(
-            self._secrets['access_key_id'],
-            self._secrets['access_key_secret'],
-            RegionId,
-        )
+        InternetChargeType = click.prompt(
+            '请输入网络计费类型(PayByBandwidth|PayByTraffic): ',
+            default='PayByTraffic', type=str)
+        self.set(['CreateInstanceParams','InternetChargeType'], InternetChargeType)
 
-        if 'CreateInstanceParams' not in self._config:
-            self._config['CreateInstanceParams'] = OrderedDict()
+        SpotStrategy = click.prompt(
+            '请输入后付费实例的竞价策略(NoSpot|SpotWithPriceLimit|SpotAsPriceGo):',
+            default='SpotWithPriceLimit', type=str)
+        self.set(['CreateInstanceParams','SpotStrategy'], SpotStrategy)
 
-        # InstanceType
-        req = DescribeInstanceTypesRequest.DescribeInstanceTypesRequest()
-        req.set_InstanceTypeFamily('ecs.gn5')
-        result = do_action(client, req)
-        items = result['InstanceTypes']['InstanceType']
-        select_list = '\n'.join('[{}] - {}'.format(
-            idx, item['InstanceTypeId'],
-        ) for idx, item in enumerate(items))
-        idx = click.prompt('Please select your Instance Type: \n{}\n'.format(select_list), type=int)
-        InstanceTypeId = items[idx]['InstanceTypeId']
-        self._config['CreateInstanceParams']['InstanceType'] = InstanceTypeId
+        SpotPriceLimit = click.prompt('请输入实例的每小时最高价格', type=float)
+        self.set(['CreateInstanceParams','SpotPriceLimit'], SpotPriceLimit)
 
-        # SecurityGroup
-        req = DescribeSecurityGroupsRequest.DescribeSecurityGroupsRequest()
-        result = do_action(client, req)
-        items = result['SecurityGroups']['SecurityGroup']
-        select_list = '\n'.join('[{}] - {}({})'.format(
-            idx, item['SecurityGroupName'], item['SecurityGroupId']
-        ) for idx, item in enumerate(items))
-        idx = click.prompt('Please select your security group: \n{}\n'.format(select_list), type=int)
-        SecurityGroupId = items[idx]['SecurityGroupId']
-        self._config['CreateInstanceParams']['SecurityGroupId'] = SecurityGroupId
-        VpcId = items[idx]['VpcId']
-
-        # Existing Disks
-        req = DescribeDisksRequest.DescribeDisksRequest()
-        req.set_Portable('true')
-        result = do_action(client, req)
-        items = result['Disks']['Disk']
-        select_list = '\n'.join('[{}] - {} {}G {}'.format(
-            idx, item['DiskId'], item['Size'], item['Description']
-        ) for idx, item in enumerate(items))
-        idx = click.prompt('Please select your portable disk: \n{}\n'.format(select_list), type=int)
-        DiskId = items[idx]['DiskId']
-        self.set('DiskId', DiskId)
-        ZoneId = items[idx]['ZoneId']
-        self.set(('CreateInstanceParams', 'ZoneId'), ZoneId)
-
-        # KeyPairName
-        req = DescribeKeyPairsRequest.DescribeKeyPairsRequest()
-        result = do_action(client, req)
-        items = result['KeyPairs']['KeyPair']
-        select_list = '\n'.join('[{}] - {}'.format(
-            idx, item['KeyPairName'],
-        ) for idx, item in enumerate(items))
-        idx = click.prompt('Please select your KeyPair Name: \n{}\n'.format(select_list), type=int)
-        KeyPairName = items[idx]['KeyPairName']
-        self._config['CreateInstanceParams']['KeyPairName'] = KeyPairName
-
-        # Images
-        req = DescribeImagesRequest.DescribeImagesRequest()
-        req.set_PageSize(50)
-        result = do_action(client, req)
-        items = result['Images']['Image']
-        items = sorted(items, key=lambda x: x['OSName'])
-        select_list = '\n'.join('[{}] - {}'.format(
-            idx, item['OSName'],
-        ) for idx, item in enumerate(items))
-        idx = click.prompt('Please select your Image(OS): \n{}\n'.format(select_list), type=int)
-        ImageId = items[idx]['ImageId']
-        self._config['CreateInstanceParams']['ImageId'] = ImageId
-
-        InstanceName = click.prompt('Enter your ecs instance name:', default='ecs-ml-01', type=str)
-        self._config['CreateInstanceParams']['InstanceName'] = InstanceName
-        InternetChargeType = click.prompt('Enter your ecs Internet Charge Type:', default='PayByTraffic', type=str)
-        self._config['CreateInstanceParams']['InternetChargeType'] = InternetChargeType
-        SpotStrategy = click.prompt('Enter your spot strategy:', default='SpotWithPriceLimit', type=str)
-        self._config['CreateInstanceParams']['SpotStrategy'] = SpotStrategy
-        SpotPriceLimit = click.prompt('Enter your spot price limit', type=float)
-        self._config['CreateInstanceParams']['SpotPriceLimit'] = SpotPriceLimit
-        SpotPriceLimit = click.prompt('Enter your Internet max out bandwidth', type=int, default=5)
-        self._config['CreateInstanceParams']['SpotPriceLimit'] = SpotPriceLimit
         self.save()
 
     def create_api_client(self):
@@ -203,6 +150,136 @@ def do_action(client, request):
     return json.loads(resp.decode('utf-8'))
 
 
+class BaseConfigParameterSelect(object):
+    def show(self, config, client=None):
+        click.echo(click.style('正在配置 ECS 实例的{} ...', fg='green').format(self.name))
+        param = config.get(self.key)
+        if param:
+            msg = "检测到你上次所使用的{}是 {}, 是否保留这个设置， 还是重新选择? [保留 y/重选 n]".format(
+                self.name, click.style(param, fg="magenta")
+            )
+            answer = click.prompt(msg, default='y').lower()
+            if answer == 'y':
+                return param
+
+        request = self.request_cls()
+        self.set_request_parameters(request)
+
+        if client is None:
+            client = config.create_api_client()
+        api_result = do_action(client, request)
+        items = self.items_getter(api_result)
+        if getattr(self, 'select_sorting', None):
+            items.sort(key=lambda x: x[self.select_sorting])
+        select_list = '\n'.join('[{}] - {}'.format(
+            idx, self.select_item_formatter(item)
+        ) for idx, item in enumerate(items))
+        msg = '可选的 {}:\n{}\n请选择实例的 {}（序号）'.format(self.name, select_list, self.name)
+        idx = click.prompt(msg, type=int)
+        param = items[idx][self.item_key]
+        config.set(self.key, param)
+        self.handle_selected_item(items[idx], config)
+
+    def set_request_parameters(self, request):
+        pass
+
+    def handle_selected_item(self, item, config):
+        pass
+
+class RegionIdSelect(BaseConfigParameterSelect):
+    name = "地域"
+    key = "RegionId"
+    request_cls = DescribeRegionsRequest.DescribeRegionsRequest
+    items_getter = lambda self, x: x['Regions']['Region']
+    item_key = "RegionId"
+    select_item_formatter = lambda self, x: "{}({})".format(x['LocalName'], x['RegionId'])
+
+
+class InstanceTypeSelect(BaseConfigParameterSelect):
+    name = "实例规格"
+    key = ['CreateInstanceParams', 'InstanceType']
+    request_cls = DescribeInstanceTypesRequest.DescribeInstanceTypesRequest
+    items_getter = lambda self, x: x['InstanceTypes']['InstanceType']
+    item_key = "InstanceTypeId"
+    select_item_formatter = lambda self, x: x['InstanceTypeId']
+
+    def set_request_parameters(self, request):
+        request.set_InstanceTypeFamily('ecs.gn5')
+
+class SecurityGroupsSelect(BaseConfigParameterSelect):
+    name = "安全组"
+    key = ['CreateInstanceParams', 'SecurityGroupId']
+    request_cls = DescribeSecurityGroupsRequest.DescribeSecurityGroupsRequest
+    items_getter = lambda self, x: x['SecurityGroups']['SecurityGroup']
+    item_key = "SecurityGroupId"
+    select_item_formatter = lambda self, x: "{}({})".format(x['SecurityGroupName'], x['SecurityGroupId'])
+
+class DisksSelect(BaseConfigParameterSelect):
+    name = "挂载的磁盘"
+    key = 'DiskId'
+    request_cls = DescribeDisksRequest.DescribeDisksRequest
+    items_getter = lambda self, x: x['Disks']['Disk']
+    item_key = "DiskId"
+    select_item_formatter = lambda self, x: "{} {}G {}".format(x['DiskId'], x['Size'], x['Description'])
+
+    def set_request_parameters(self, request):
+        request.set_Portable('true')
+
+    def handle_selected_item(self, item, config):
+        config.set(('CreateInstanceParams', 'ZoneId'), item['ZoneId'])
+
+class SnapshotsSelect(BaseConfigParameterSelect):
+    name = "用于创建磁盘的快照"
+    key = 'SnapshotId'
+    request_cls = DescribeSnapshotsRequest.DescribeSnapshotsRequest
+    items_getter = lambda self, x: x['Snapshots']['Snapshot']
+    item_key = "SnapshotId"
+    select_item_formatter = lambda self, x: "{} {} {}G".format(x['SnapshotId'], x['SnapshotName'], x['SourceDiskSize'])
+
+    def handle_selected_item(self, item, config):
+        client = config.create_api_client()
+        ZonesSelect().show(config=config)
+        # CreateDisk
+        request = CreateDiskRequest.CreateDiskRequest()
+        request.set_DiskName("ml-data-disk")
+        request.set_DiskCategory("cloud_ssd")
+        request.set_SnapshotId(item['SnapshotId'])
+        request.set_ZoneId(config.get('ZoneId'))
+        result = do_action(client, request)
+        DiskId = result['DiskId']
+        config.set('DiskId', DiskId)
+
+
+class ZonesSelect(BaseConfigParameterSelect):
+    name = "可用区"
+    key = ['CreateInstanceParams', 'ZoneId']
+    request_cls = DescribeZonesRequest.DescribeZonesRequest
+    items_getter = lambda self, x: x['Zones']['Zone']
+    item_key = "ZoneId"
+    select_item_formatter = lambda self, x: "{} {}".format(x['ZoneId'], x['LocalName'])
+
+
+class KeyPairsSelect(BaseConfigParameterSelect):
+    name = "SSH 密钥对"
+    key = ['CreateInstanceParams', 'KeyPairName']
+    request_cls = DescribeKeyPairsRequest.DescribeKeyPairsRequest
+    items_getter = lambda self, x: x['KeyPairs']['KeyPair']
+    item_key = "KeyPairName"
+    select_item_formatter = lambda self, x: x['KeyPairName']
+
+class ImagesSelect(BaseConfigParameterSelect):
+    name = "操作系统镜像"
+    key = ['CreateInstanceParams', 'ImageId']
+    request_cls = DescribeImagesRequest.DescribeImagesRequest
+    items_getter = lambda self, x: x['Images']['Image']
+    item_key = "ImageId"
+    select_item_formatter = lambda self, x: x['OSName']
+    select_sorting = 'OSName'
+
+    def set_request_parameters(self, request):
+        request.set_PageSize(50)
+        request.set_OSType("linux")
+
 def wait_for_instance_status(config, status):
     """
     Wait for the instance's status to become the given status
@@ -216,4 +293,17 @@ def wait_for_instance_status(config, status):
         items = result["Instances"]["Instance"]
         lookups = {item['InstanceId']: item for item in items}
         if lookups[InstanceId]['Status'] == status:
+            return
+
+
+def wait_for_dick_status(config, status):
+    client = config.create_api_client()
+    DiskId = config.get('DiskId')
+    while True:
+        time.sleep(20)
+        req = DescribeDisksRequest.DescribeDisksRequest()
+        result = do_action(client, req)
+        items = result['Disks']['Disk']
+        lookups = {item['DiskId']: item for item in items}
+        if lookups[DiskId]['Status'] == status:
             return
