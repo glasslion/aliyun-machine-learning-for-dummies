@@ -1,0 +1,17 @@
+{
+    "RegionId": "cn-hongkong",
+    "InstanceId": "i-j6cbrrhehgerhevkoohm",
+    "CreateInstanceParams": {
+        "SecurityGroupId": "sg-j6efwgwegfkinkr",
+        "InstanceType": "ecs.gn5-c4g1.xlarge",
+        "KeyPairName": "mysshkey",
+        "ImageId": "ubuntu_16_0402_64_20G_alibase_20170818.vhd",
+        "InstanceName": "ecs-ml-01",
+        "InternetChargeType": "PayByTraffic",
+        "SpotStrategy": "SpotWithPriceLimit",
+        "SpotPriceLimit": 2.0,
+        "InternetMaxBandwidthOut": 5,
+        "ZoneId": "cn-hongkong-c"
+    },
+    "DiskId": "d-ddsfwefwergr"
+}
