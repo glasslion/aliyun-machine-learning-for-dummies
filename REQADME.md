@@ -12,12 +12,12 @@
 ## 磁盘和镜像
 磁盘格式化
 
-## AWS
+## 和 AWS EC2 对比
 p2.xlarge NVIDIA Corporation GK210GL [Tesla K80]
 
 ## Notebook
-本项目默认的 Jupyter Notebook 端口为 8888。
-
+本项目默认的 Jupyter Notebook 端口为 8888。 Notebook 只能通过 https 的方式来访问, 即 `https://<公网 ip>:8888/`。
+由于使用的是自签名证书， 首次访问时，浏览器会有相应的警告。
 
 
 ## 参考资料

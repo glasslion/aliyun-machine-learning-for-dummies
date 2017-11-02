@@ -1,6 +1,6 @@
 ---
 - name: Install nb_conda
-  command: /mnt/ml/libs/anaconda3/bin/conda install -y jupyter nb_conda -c conda-forge
+  command: /mnt/ml/libs/anaconda3/bin/conda install -y jupyter nb_conda nb_conda_kernels -c conda-forge
   become_user: ml
 
 - name: Enable conda kernels
