@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, print_function, unicode_literals
+import json
 
 # Due to a bug in the aliyun sdk, https://github.com/aliyun/aliyun-openapi-python-sdk/issues/43
 # this import must appear before any aliyun sdk imports
@@ -87,7 +88,7 @@ def attach_disk(config):
 def save_instance_info(config):
     client = config.create_api_client()
     req = DescribeInstancesRequest.DescribeInstancesRequest()
-    req.set_InstanceIds([config.get('InstanceId')])
+    req.set_InstanceIds(json.dumps([config.get('InstanceId')]))
     result = do_action(client, req)
     items = result["Instances"]["Instance"]
     lookups = {item['InstanceId']: item for item in items}

@@ -6,6 +6,7 @@
 
 click = "*"
 aliyun-python-sdk-ecs = "*"
-future = "*"
 aliyun-python-sdk-core = {version="*", markers="python_version < '3'"}
-aliyun-python-sdk-core-v3 = {version="*", markers="python_version >= '3'"}
+"aliyun-python-sdk-core-v3" = {version="*", markers="python_version >= '3'"}
+six = "*"
+ansible = "*"

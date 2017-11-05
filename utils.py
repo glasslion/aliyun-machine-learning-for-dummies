@@ -8,6 +8,7 @@ from collections import OrderedDict
 import time
 
 import click
+import six
 from aliyunsdkcore.client import AcsClient
 from aliyunsdkecs.request.v20140526 import (DescribeDisksRequest,
                                             CreateDiskRequest,
@@ -22,6 +23,10 @@ from aliyunsdkecs.request.v20140526 import (DescribeDisksRequest,
 
 CONFIG_FILE = 'config.json'
 
+def force_text(s, encoding='utf-8'):
+    if isinstance(s, six.binary_type):
+        return s.decode(encoding)
+    return s
 
 class Config(object):
     def __init__(self, *args, **kwargs):
@@ -35,7 +40,7 @@ class Config(object):
         try:
             with io.open(CONFIG_FILE, encoding='utf-8') as f:
                 self._config = json.loads(f.read(), object_pairs_hook=OrderedDict)
-        except (IOError, OSError):
+        except (IOError, OSError, ValueError):
             pass
 
     def save(self):
@@ -43,7 +48,7 @@ class Config(object):
         Save configs into the config json file
         """
         with io.open(CONFIG_FILE, mode='w', encoding='utf-8') as f:
-            return f.write(json.dumps(self._config, indent=4))
+            return f.write(force_text(json.dumps(self._config, indent=4)))
 
     def obtain_secret(self, name):
         """
@@ -122,16 +127,19 @@ class Config(object):
         self.set(['CreateInstanceParams','InstanceName'], InstanceName)
 
         InternetChargeType = click.prompt(
-            '请输入网络计费类型(PayByBandwidth|PayByTraffic): ',
+            '请设置网络计费类型(PayByBandwidth|PayByTraffic): ',
             default='PayByTraffic', type=str)
         self.set(['CreateInstanceParams','InternetChargeType'], InternetChargeType)
 
+        InternetMaxBandwidthOut = click.prompt('请设置公网出口带宽(单位 MB), 必须大于0， 否则无法分配公网 IP', type=int, default=25)
+        self.set(['CreateInstanceParams','InternetMaxBandwidthOut'], InternetMaxBandwidthOut)
+
         SpotStrategy = click.prompt(
-            '请输入后付费实例的竞价策略(NoSpot|SpotWithPriceLimit|SpotAsPriceGo):',
+            '请设置后付费实例的竞价策略(NoSpot|SpotWithPriceLimit|SpotAsPriceGo):',
             default='SpotWithPriceLimit', type=str)
         self.set(['CreateInstanceParams','SpotStrategy'], SpotStrategy)
 
-        SpotPriceLimit = click.prompt('请输入实例的每小时最高价格', type=float)
+        SpotPriceLimit = click.prompt('请设置实例的每小时最高价格', type=float)
         self.set(['CreateInstanceParams','SpotPriceLimit'], SpotPriceLimit)
 
         self.save()
@@ -295,6 +303,10 @@ def wait_for_instance_status(config, status):
         lookups = {item['InstanceId']: item for item in items}
         if lookups[InstanceId]['Status'] == status:
             return
+        else:
+            click.echo("实例当前的状态为{}， 正在等待其变为 {} ...".format(
+                lookups[InstanceId]['Status'], status
+            ))
 
 
 def wait_for_dick_status(config, status):
