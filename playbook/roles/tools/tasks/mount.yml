@@ -1,3 +1,14 @@
+- name: Create a partition
+  parted:
+    device: /dev/vdc
+    number: 1
+    state: present
+
+- name: Create a file system if the device does not have one
+  filesystem:
+    dev:  /dev/vdc1
+    fstype: ext4
+
 - name: Mount external drive
   mount:
     path:  /mnt/ml

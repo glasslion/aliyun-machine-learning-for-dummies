@@ -77,7 +77,7 @@ def start_instance(config):
     result = do_action(client, req)
 
 def attach_disk(config):
-    click.prompt(click.style("正在挂载数据盘 ...", fg="green"))
+    click.echo(click.style("正在挂载数据盘 ...", fg="green"))
     client = config.create_api_client()
     req = AttachDiskRequest.AttachDiskRequest()
     req.set_InstanceId(config.get('InstanceId'))
