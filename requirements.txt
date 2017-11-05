@@ -1,3 +1,4 @@
-aliyun-python-sdk-core-v3==2.5.1
-aliyun-python-sdk-ecs==4.1.0
-click==6.7
+aliyun-python-sdk-core-v3; python_version >= '3'
+aliyun-python-sdk-core; python_version < '3'
+aliyun-python-sdk-ecs
+click

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from __future__ import absolute_import, print_function, unicode_literals
 
 import io
@@ -34,7 +35,7 @@ class Config(object):
         try:
             with io.open(CONFIG_FILE, encoding='utf-8') as f:
                 self._config = json.loads(f.read(), object_pairs_hook=OrderedDict)
-        except FileNotFoundError:
+        except (IOError, OSError):
             pass
 
     def save(self):
@@ -53,7 +54,7 @@ class Config(object):
         human_name = name.upper().replace('_', ' ')
 
         if os.environ.get(env_name):
-            self._secrets[name] =os.environ.get(env_name)
+            self._secrets[name] = os.environ.get(env_name).strip(' \r\t\n')
         else:
             self._secrets[name] = click.prompt(
                 'Please enter your {}'.format(human_name), type=str, hide_input=True)
@@ -75,7 +76,7 @@ class Config(object):
         if isinstance(key, (list, tuple)):
             node = self._config
             for k in key:
-                node = node.get(k)
+                node = node.get(k, {})
             return node
         else:
             return self._config.get(key)
@@ -244,7 +245,7 @@ class SnapshotsSelect(BaseConfigParameterSelect):
         request.set_DiskName("ml-data-disk")
         request.set_DiskCategory("cloud_ssd")
         request.set_SnapshotId(item['SnapshotId'])
-        request.set_ZoneId(config.get('ZoneId'))
+        request.set_ZoneId(config.get(['CreateInstanceParams', 'ZoneId']))
         result = do_action(client, request)
         DiskId = result['DiskId']
         config.set('DiskId', DiskId)

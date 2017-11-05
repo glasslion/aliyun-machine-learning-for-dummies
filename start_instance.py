@@ -1,15 +1,18 @@
+# -*- coding: utf-8 -*-
 from __future__ import absolute_import, print_function, unicode_literals
 
-import io
+# Due to a bug in the aliyun sdk, https://github.com/aliyun/aliyun-openapi-python-sdk/issues/43
+# this import must appear before any aliyun sdk imports
+from utils import Config, do_action, wait_for_instance_status
 
+import io
 import click
+click.disable_unicode_literals_warning
 from aliyunsdkecs.request.v20140526 import (AllocatePublicIpAddressRequest,
                                             AttachDiskRequest,
                                             CreateInstanceRequest,
                                             DescribeInstancesRequest,
                                             StartInstanceRequest)
-
-from utils import Config, do_action, wait_for_instance_status
 
 
 @click.command()
@@ -45,9 +48,11 @@ def create_instance(config):
     client = config.create_api_client()
     req = CreateInstanceRequest.CreateInstanceRequest()
 
-    for param_name, param_value in config._config['CreateInstanceParams'].items():
-        setter = getattr(req, 'set_'+param_name)
-        setter(param_value)
+    create_params = config.get('CreateInstanceParams')
+    if create_params:
+        for param_name, param_value in create_params.items():
+            setter = getattr(req, 'set_'+param_name)
+            setter(param_value)
 
     result = do_action(client, req)
     instance_id = result['InstanceId']
