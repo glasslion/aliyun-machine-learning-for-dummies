@@ -31,8 +31,8 @@ def main(interactive):
 
     should_create_new = True
     if config.get('InstanceId'):
-        answer = click.prompt("Found an existing instance, still create a new one? [y/n]")
-        if answer.lower() == 'n':
+        answer = click.prompt("在配置文件中找到一个已存在的实例, 是使用这个实例(y), 还是创建一个新的实例(n)? [y/n]")
+        if answer.lower() == 'y':
             should_create_new = False
     if should_create_new:
         create_instance(config)
