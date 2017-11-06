@@ -46,7 +46,7 @@
 
 - name: Download latest NVIDA drivers
   get_url:
-    url: http://us.download.nvidia.com/XFree86/Linux-x86_64/375.20/NVIDIA-Linux-x86_64-375.20.run
+    url: http://us.download.nvidia.com/tesla/384.81/NVIDIA-Linux-x86_64-384.81.run
     dest: /mnt/ml/cache/nvdia_driver.run
   when: downloaded.stat.exists == False
 
