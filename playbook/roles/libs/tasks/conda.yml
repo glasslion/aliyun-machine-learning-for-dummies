@@ -30,7 +30,7 @@
   shell: /mnt/ml/libs/anaconda3/bin/conda update conda -y --force
   become_user: ml
 
-- name: Check if anapy36 env is installed
+- name: Check if a py36 env is installed
   stat:
     path: /mnt/ml/libs/anaconda3/envs/py36
   register: py36
