@@ -20,8 +20,12 @@ def main():
     delete_instance(config)
     answer = click.prompt("是否要为当前的数据盘创建一个快照, 然后删除数据盘， 以节约费用? [y/n]")
     if answer == 'y':
+        OldSnapshotId = config.get('SnapshotId')
         create_snapshot(config)
         delete_disk(config)
+        if OldSnapshotId:
+            delete_snapshot(config, OldSnapshotId)
+
     cleanup(config)
 
 
@@ -42,17 +46,17 @@ def delete_instance(config):
 
 def create_snapshot(config):
     client = config.create_api_client()
-    OldSnapshotId = config.get('SnapshotId')
-    if OldSnapshotId:
-        request = DeleteSnapshotRequest.DeleteSnapshotRequest()
-        request.set_SnapshotId(OldSnapshotId)
-        do_action(client, request)
-
     request = CreateSnapshotRequest.CreateSnapshotRequest()
     request.set_DiskId(config.get('DiskId'))
     result = do_action(client, request)
     SnapshotId= result['SnapshotId']
     config.set('SnapshotId', SnapshotId)
+
+def delete_snapshot(config, snapshot_id):
+    client = config.create_api_client()
+    request = DeleteSnapshotRequest.DeleteSnapshotRequest()
+    request.set_SnapshotId(snapshot_id)
+    do_action(client, request)
 
 def delete_disk(config):
     client = config.create_api_client()

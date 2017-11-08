@@ -8,4 +8,7 @@
     state: present
   with_items:
     - htop
+    - unzip
+    - p7zip-full
+    - tree
 

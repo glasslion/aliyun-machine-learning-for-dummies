@@ -4,7 +4,7 @@ import json
 
 # Due to a bug in the aliyun sdk, https://github.com/aliyun/aliyun-openapi-python-sdk/issues/43
 # this import must appear before any aliyun sdk imports
-from utils import Config, do_action, wait_for_instance_status
+from utils import Config, do_action, wait_for_instance_status, create_disk_from_snapshot
 
 import io
 import click
@@ -36,10 +36,15 @@ def main(interactive):
             should_create_new = False
     if should_create_new:
         create_instance(config)
-
-    allocate_public_ip(config)
-    attach_disk(config)
     wait_for_instance_status(config, "Stopped")
+    allocate_public_ip(config)
+    if config.get('DiskId'):
+        # Do nothing, if DiskId and SnapshotId both found, we prefer Disk
+        pass
+    elif config.get('SnapshotId'):
+        create_disk_from_snapshot(config)
+    attach_disk(config)
+
     start_instance(config)
     save_instance_info(config)
 
