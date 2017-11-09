@@ -34,11 +34,14 @@ ECS 支持多种不同类型的实例， 但其中大部分并不适合用来跑
 
 本项目的自动化脚本在创建实例时， 会选择你所指定的 SSH key。 实例创建完成后， 就能通过 ssh 登录到主机了。
 
+### 添加 Git(SSH) Key
+你需要在 `playbook/tools/files/` 目录下添加一对 SSH 公私钥。
+
 
 ### 磁盘和镜像
 
 
-### Notebook
+### Jupyter Notebook
 本项目默认的 Jupyter Notebook 端口为 8888。 为了安全， Notebook 只开放了通过 https 的方式来访问, 即 `https://<公网 ip>:8888/`。 由于 HTTPS 使用的是自签名证书， 首次访问时，浏览器会有相应的警告。
 
 Jupyter Notebook 应当被配置为通过密码认证后才能访问。`playbook/roles/libs/files/` 目录下有个 `jupyter_notebook_config.py.example`样例配置文件。 将这个文件重命名为 `jupyter_notebook_config.py`, **并替换其中的密码哈希**即可。 你可以参考 Jupyter 文档 [Preparing a hashed password](http://jupyter-notebook.readthedocs.io/en/stable/public_server.html#Preparing-a-hashed-password) 来设置你自己的哈希。注意，尽管 `jupyter_notebook_config.py` 里的密码是哈希过的， 你仍然应避免把它泄漏给其他人， 事实上， 本项目已经把 它加入到 .gitignore 中了。
@@ -56,3 +59,4 @@ p2.xlarge NVIDIA Corporation GK210GL [Tesla K80]
 - [Set up an GPU instance (p2.xlarge: Ubuntu 16.04+k 80 GPU) for deep learning on AWS](https://medium.com/@rogerxujiang/setting-up-a-gpu-instance-for-deep-learning-on-aws-795343e16e44)
 - [Ansible 进阶技巧](https://www.ibm.com/developerworks/cn/linux/1608_lih_ansible/index.html)
 - [Tips for Running TensorFlow with GPU Support on AWS](http://mortada.net/tips-for-running-tensorflow-with-gpu-support-on-aws.html)
+- [ec2-gpu-instance](https://github.com/equialgo/ec2-gpu-instance)
