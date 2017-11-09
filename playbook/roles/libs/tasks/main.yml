@@ -5,5 +5,7 @@
  - { import_tasks: optimize.yml, tags: 'optimize' }
  - { import_tasks: conda.yml, tags: 'conda' }
  - { import_tasks: jupyter.yml, tags: 'jupyter' }
+ - { import_tasks: tensorflow.yml, tags: 'mxnet' }
  - { import_tasks: mxnet.yml, tags: 'mxnet' }
+ - { import_tasks: pytorch.yml, tags: 'pytorch' }
  - { import_tasks: theano.yml, tags: theano}

@@ -9,7 +9,7 @@
     - graphviz
 
 - name: Install MXNet
-  shell: '{{conda_directory}}/bin/pip install mxnet-cu80'
+  shell: '{{conda_directory}}/bin/pip install --pre mxnet-cu80'
   become_user: ml
 
 - name: Install graphviz

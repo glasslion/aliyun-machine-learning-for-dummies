@@ -1,0 +1,3 @@
+- name: Install PyTorch with conda
+  shell: '{{conda_directory}}/bin/conda install pytorch torchvision -c soumith'
+  become_user: ml
