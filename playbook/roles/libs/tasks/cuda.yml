@@ -22,7 +22,7 @@
   when: installed.stat.exists == False
 
 - name: Install build dependencies
-  apt: name={{item}} update_cache=yes
+  apt: name={{item}}
   with_items:
     - build-essential
     - dkms
