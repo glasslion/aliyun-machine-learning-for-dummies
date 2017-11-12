@@ -1,5 +1,8 @@
 # 阿里云 ECS 机器学习懒人包
 
+## DEMO
+
+
 ## 准备工作
 本项目能帮助你全自动地创建、启动、安装、配置销毁用于
 
@@ -35,10 +38,17 @@ ECS 支持多种不同类型的实例， 但其中大部分并不适合用来跑
 本项目的自动化脚本在创建实例时， 会选择你所指定的 SSH key。 实例创建完成后， 就能通过 ssh 登录到主机了。
 
 ### 添加 Git(SSH) Key
-你需要在 `playbook/tools/files/` 目录下添加一对 SSH 公私钥。
+你需要在 `playbook/tools/files/` 目录下添加一对 SSH 公私钥。 这对公钥主要是为了方便向 Github 上 push。
 
+### 磁盘和快照
+ECS 实例会自带一块系统盘和数据盘， 但这两块盘会随着ECS实例的删除而被同时释放。 为了持久化数据， 我采用的是再额外挂载一块数据盘的方式。 这块数据盘可以独立于ECS实例存在。 平时的操作都应在这块磁盘上进行（挂载在 `/mnt/ml` 目录下）。
 
-### 磁盘和镜像
+当然， 你还可以把这块数据盘保存为快照来进一步节省费用。
+运行 `start_instance.py` 时，在交互模式下， 你有3种选项可以选择:
+1. 创建一块全新的数据盘(一般只有首次运行时， 才会用到)
+2. 使用一块现有的数据盘(会列出你账户下所有的数据盘，供你选择)
+3. 使用一个现有的磁盘快照来创建一个新的数据盘(会给出你的快照列表)
+类似的， 在运行 `delete_instance.py` 销毁实例时， 你可以选择是否为当前的数据盘创建快照?
 
 
 ### Jupyter Notebook
@@ -47,12 +57,28 @@ ECS 支持多种不同类型的实例， 但其中大部分并不适合用来跑
 Jupyter Notebook 应当被配置为通过密码认证后才能访问。`playbook/roles/libs/files/` 目录下有个 `jupyter_notebook_config.py.example`样例配置文件。 将这个文件重命名为 `jupyter_notebook_config.py`, **并替换其中的密码哈希**即可。 你可以参考 Jupyter 文档 [Preparing a hashed password](http://jupyter-notebook.readthedocs.io/en/stable/public_server.html#Preparing-a-hashed-password) 来设置你自己的哈希。注意，尽管 `jupyter_notebook_config.py` 里的密码是哈希过的， 你仍然应避免把它泄漏给其他人， 事实上， 本项目已经把 它加入到 .gitignore 中了。
 
 
-## 一键创建和销毁实例
+### 一键创建和销毁实例
 第一次运行 `start_instance.py` 时，应使用交互模式, 即 `python start_instance.py -i`。 在交互模式下， 它会引导你选择、配置实例的各个参数， 例如区域，规格、安全组 ..., 并保存配置到 `config.json`。 再次运行时， 如果使用和之前一样的配置， 就不用再重复配置了。
 
 
+### ECS 实例的配置和常用机器学习包的安装
+实例的配置是通过 [ansible](https://www.ansible.com/) 来完成的。 进入 `playbook` 目录， 运行 `ansible-playbook ecs-gpu-instance.yml` 即可开始自动配置实例， 全程不需要人工干预。 (`start_instance.py` 在运行完成后, 会自动把新生成的实例的 ip 地址写入到 `playbook/hosts` 文件中)。
+
+这个 playbook 里大致做了下面几件事：
+- 创建了一个普通用户(用户名： `ml`) 以代替权限过大的 root 用户。你可以通过 `ssh ml@<server ip>` 的方式登录为整个用户。 该用户可以通过 sudo 获取 root 权限。
+- 分区、格式化并挂载实例的两块数据盘。
+- 安装配置 git, tmux, htop, iotop, unzip 等常用工具
+- 卸载 Ubuntu 默认的显卡驱动(nouveau), 下载、安装 Nvidia 的官方驱动。(使用的是 阿里云 GN5系列所对应的 P100 GPU 的驱动， 故果你使用其他类型的实例，请确保)
+- 下载、安装和配置 CUDA 8.0
+- 安装和配置 cuDNN。 由于 Nvidia 不提供 cuDNN 的公开下载地址， 你需要在 Nvidia 官网上用帐号登录后， 下载 libcudnn5.deb， libcudnn5-dev.deb， libcudnn5-doc.deb 三个包， 放到 `/mnt/ml/cache/` 目录（数据盘）下。
+
+以上操作都是 *幂等* 的。 重复执行不会产生副作用。 例如格式化磁盘， 只有检测到磁盘之前没有被格式化过，才会执行。
+
+
 ## 和 AWS EC2 对比
-p2.xlarge NVIDIA Corporation GK210GL [Tesla K80]
+AWS 上和 阿里云 GN5 比较接近的是 [P2](https://aws.amazon.com/ec2/instance-types/p2/) 实例。使用的是 NVidia Tesla K80 显卡。 在性价比方面还是弱于阿里云的。
+
+AWS 当然也有其优势的地方。 AWS EC2 实例在停机后就只收取磁盘费用， 而阿里云要在实例删除后才停止收费。 此外 AWS 提供了 Amazon Machine Image (AMI)， 即专为机器学习定制的系统镜像， 简化了 NVidia 驱动和 CUDA 的安装。
 
 
 ## 参考资料
