@@ -4,9 +4,9 @@
 
 
 ## 准备工作
-本项目能帮助你全自动地创建、启动、安装、配置销毁用于
+本项目能帮助你在阿里云上全自动地创建、启动、安装、配置销毁用于机器学习的云服务器（ECS）实例。
 
-首先， 创建实例前， 请确保你的阿里云账户余额大于 100元， 否则你将无法购买竞价实例。
+在开始前， 有些准备工作要做。 首先， 请确保你的阿里云账户余额大于 100元， 否则你将无法购买竞价实例。
 
 ### 配置 阿里云 access key
 出于安全考虑, 本项目不会把阿里云的 Access ID 和 Access Key 保存到配置文件里去, 如果你不想要在每次创建/删除实例时手动输入密码, 可以将 access key设置在 `ALIYUN_ACCESS_KEY_ID` 和 `ALIYUN_ACCESS_KEY_SECRET` 两个环境变量里。
@@ -56,12 +56,15 @@ ECS 实例会自带一块系统盘和数据盘， 但这两块盘会随着ECS实
 
 Jupyter Notebook 应当被配置为通过密码认证后才能访问。`playbook/roles/libs/files/` 目录下有个 `jupyter_notebook_config.py.example`样例配置文件。 将这个文件重命名为 `jupyter_notebook_config.py`, **并替换其中的密码哈希**即可。 你可以参考 Jupyter 文档 [Preparing a hashed password](http://jupyter-notebook.readthedocs.io/en/stable/public_server.html#Preparing-a-hashed-password) 来设置你自己的哈希。注意，尽管 `jupyter_notebook_config.py` 里的密码是哈希过的， 你仍然应避免把它泄漏给其他人， 事实上， 本项目已经把 它加入到 .gitignore 中了。
 
+## 使用指南
 
-### 一键创建和销毁实例
+### 创建实例
+
 第一次运行 `start_instance.py` 时，应使用交互模式, 即 `python start_instance.py -i`。 在交互模式下， 它会引导你选择、配置实例的各个参数， 例如区域，规格、安全组 ..., 并保存配置到 `config.json`。 再次运行时， 如果使用和之前一样的配置， 就不用再重复配置了。
 
+### 销毁实例
 
-### ECS 实例的配置和常用机器学习包的安装
+### 系统配置和常用机器学习包的安装
 实例的配置是通过 [ansible](https://www.ansible.com/) 来完成的。 进入 `playbook` 目录， 运行 `ansible-playbook ecs-gpu-instance.yml` 即可开始自动配置实例， 全程不需要人工干预。 (`start_instance.py` 在运行完成后, 会自动把新生成的实例的 ip 地址写入到 `playbook/hosts` 文件中)。
 
 这个 playbook 里大致做了下面几件事：
@@ -71,6 +74,9 @@ Jupyter Notebook 应当被配置为通过密码认证后才能访问。`playbook
 - 卸载 Ubuntu 默认的显卡驱动(nouveau), 下载、安装 Nvidia 的官方驱动。(使用的是 阿里云 GN5系列所对应的 P100 GPU 的驱动， 故果你使用其他类型的实例，请确保)
 - 下载、安装和配置 CUDA 8.0
 - 安装和配置 cuDNN。 由于 Nvidia 不提供 cuDNN 的公开下载地址， 你需要在 Nvidia 官网上用帐号登录后， 下载 libcudnn5.deb， libcudnn5-dev.deb， libcudnn5-doc.deb 三个包， 放到 `/mnt/ml/cache/` 目录（数据盘）下。
+- 安装 anaconda, 并创建一个名为 `py36` 的 conda 环境。
+- 安装 tensorflow, mxnet, pytorch, theano, jupyter notebok 等机器学习常用的包。
+
 
 以上操作都是 *幂等* 的。 重复执行不会产生副作用。 例如格式化磁盘， 只有检测到磁盘之前没有被格式化过，才会执行。
 
