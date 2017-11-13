@@ -1,0 +1,11 @@
+site_name: 阿里云 ECS 机器学习懒人包
+pages:
+    - Home: index.md
+    - 准备工作: preparing.md
+    - About: about.md
+theme:
+  name: 'material'
+  language: 'zh'
+  palette:
+    primary: 'red'
+    accent: 'red'
