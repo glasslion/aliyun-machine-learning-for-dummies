@@ -1,11 +1,3 @@
-# 阿里云 ECS 机器学习懒人包
-
-## DEMO
-
-
-## 准备工作
-本项目能帮助你在阿里云上全自动地创建、启动、安装、配置销毁用于机器学习的云服务器（ECS）实例。
-
 在开始前， 还有些准备工作要做。 首先， 请确保你的阿里云账户余额大于 100元， 否则你将无法购买竞价实例。
 
 ### 配置 阿里云 access key
@@ -55,40 +47,3 @@ ECS 实例会自带一块系统盘和数据盘， 但这两块盘会随着ECS实
 本项目默认的 Jupyter Notebook 端口为 8888。 为了安全， Notebook 只开放了通过 https 的方式来访问, 即 `https://<公网 ip>:8888/`。 由于 HTTPS 使用的是自签名证书， 首次访问时，浏览器会有相应的警告。
 
 Jupyter Notebook 应当被配置为通过密码认证后才能访问。`playbook/roles/libs/files/` 目录下有个 `jupyter_notebook_config.py.example`样例配置文件。 将这个文件重命名为 `jupyter_notebook_config.py`, **并替换其中的密码哈希**即可。 你可以参考 Jupyter 文档 [Preparing a hashed password](http://jupyter-notebook.readthedocs.io/en/stable/public_server.html#Preparing-a-hashed-password) 来设置你自己的哈希。注意，尽管 `jupyter_notebook_config.py` 里的密码是哈希过的， 你仍然应避免把它泄漏给其他人， 事实上， 本项目已经把 它加入到 .gitignore 中了。
-
-## 使用指南
-
-### 创建实例
-
-第一次运行 `start_instance.py` 时，应使用交互模式, 即 `python start_instance.py -i`。 在交互模式下， 它会引导你选择、配置实例的各个参数， 例如区域，规格、安全组 ..., 并保存配置到 `config.json`。 再次运行时， 如果使用和之前一样的配置， 就不用再重复配置了。
-
-### 销毁实例
-
-### 系统配置和常用机器学习包的安装
-实例的配置是通过 [ansible](https://www.ansible.com/) 来完成的。 进入 `playbook` 目录， 运行 `ansible-playbook ecs-gpu-instance.yml` 即可开始自动配置实例， 全程不需要人工干预。 (`start_instance.py` 在运行完成后, 会自动把新生成的实例的 ip 地址写入到 `playbook/hosts` 文件中)。
-
-这个 playbook 里大致做了下面几件事：
-- 创建了一个普通用户(用户名： `ml`) 以代替权限过大的 root 用户。你可以通过 `ssh ml@<server ip>` 的方式登录为整个用户。 该用户可以通过 sudo 获取 root 权限。
-- 分区、格式化并挂载实例的两块数据盘。
-- 安装配置 git, tmux, htop, iotop, unzip 等常用工具
-- 卸载 Ubuntu 默认的显卡驱动(nouveau), 下载、安装 Nvidia 的官方驱动。(使用的是 阿里云 GN5系列所对应的 P100 GPU 的驱动， 故果你使用其他类型的实例，请确保)
-- 下载、安装和配置 CUDA 8.0
-- 安装和配置 cuDNN。 由于 Nvidia 不提供 cuDNN 的公开下载地址， 你需要在 Nvidia 官网上用帐号登录后， 下载 libcudnn5.deb， libcudnn5-dev.deb， libcudnn5-doc.deb 三个包， 放到 `/mnt/ml/cache/` 目录（数据盘）下。
-- 安装 anaconda, 并创建一个名为 `py36` 的 conda 环境。
-- 安装 tensorflow, mxnet, pytorch, theano, jupyter notebok 等机器学习常用的包。
-
-
-以上操作都是 *幂等* 的。 重复执行不会产生副作用。 例如格式化磁盘， 只有检测到磁盘之前没有被格式化过，才会执行。
-
-
-## 和 AWS EC2 对比
-AWS 上和 阿里云 GN5 比较接近的是 [P2](https://aws.amazon.com/ec2/instance-types/p2/) 实例。使用的是 NVidia Tesla K80 显卡。 在性价比方面还是弱于阿里云的。
-
-AWS 当然也有其优势的地方。 AWS EC2 实例在停机后就只收取磁盘费用， 而阿里云要在实例删除后才停止收费。 此外 AWS 提供了 Amazon Machine Image (AMI)， 即专为机器学习定制的系统镜像， 简化了 NVidia 驱动和 CUDA 的安装。
-
-
-## 参考资料
-- [Set up an GPU instance (p2.xlarge: Ubuntu 16.04+k 80 GPU) for deep learning on AWS](https://medium.com/@rogerxujiang/setting-up-a-gpu-instance-for-deep-learning-on-aws-795343e16e44)
-- [Ansible 进阶技巧](https://www.ibm.com/developerworks/cn/linux/1608_lih_ansible/index.html)
-- [Tips for Running TensorFlow with GPU Support on AWS](http://mortada.net/tips-for-running-tensorflow-with-gpu-support-on-aws.html)
-- [ec2-gpu-instance](https://github.com/equialgo/ec2-gpu-instance)

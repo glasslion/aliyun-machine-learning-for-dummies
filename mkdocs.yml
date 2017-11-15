@@ -1,11 +1,16 @@
 site_name: 阿里云 ECS 机器学习懒人包
 pages:
-    - Home: index.md
+    - 首页: index.md
     - 准备工作: preparing.md
-    - About: about.md
+    - 和 AWS EC2 的比较: aws.md
 theme:
   name: 'material'
   language: 'zh'
   palette:
     primary: 'red'
     accent: 'red'
+  logo:
+    icon: 'whatshot'
+
+repo_name: 'Star on Github'
+repo_url: 'https://github.com/glasslion/aliyun-machine-learning-for-dummies'
