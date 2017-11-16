@@ -1,0 +1,516 @@
+
+
+
+
+<!DOCTYPE html>
+<html lang="zh" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      <meta http-equiv="x-ua-compatible" content="ie=edge">
+      
+      
+      
+      
+        <meta name="lang:clipboard.copy" content="复制">
+      
+        <meta name="lang:clipboard.copied" content="已复制">
+      
+        <meta name="lang:search.language" content="zh">
+      
+        <meta name="lang:search.result.none" content="没有找到符合条件的结果">
+      
+        <meta name="lang:search.result.one" content="找到 1 个符合条件的结果">
+      
+        <meta name="lang:search.result.other" content="# 个符合条件的结果">
+      
+        <meta name="lang:search.tokenizer" content="[\uff0c\u3002]+">
+      
+      <link rel="shortcut icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-0.17.1, mkdocs-material-2.0.4">
+    
+    
+      
+        <title>准备工作 - 阿里云 ECS 机器学习懒人包</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/application-709eec9410.css">
+      
+        <link rel="stylesheet" href="../assets/stylesheets/application-23f75ab9c7.palette.css">
+      
+    
+    
+      <script src="../assets/javascripts/modernizr-e826f8942a.js"></script>
+    
+    
+      
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700|Roboto+Mono">
+        <style>body,input{font-family:"Roboto","Helvetica Neue",Helvetica,Arial,sans-serif}code,kbd,pre{font-family:"Roboto Mono","Courier New",Courier,monospace}</style>
+      
+      <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    
+    
+    
+  </head>
+  
+    
+    
+    
+      <body data-md-color-primary="red" data-md-color-accent="red">
+    
+  
+    <svg class="md-svg">
+      <defs>
+        
+        
+          <svg xmlns="http://www.w3.org/2000/svg" width="416" height="448" viewBox="0 0 416 448" id="github"><path fill="currentColor" d="M160 304q0 10-3.125 20.5t-10.75 19T128 352t-18.125-8.5-10.75-19T96 304t3.125-20.5 10.75-19T128 256t18.125 8.5 10.75 19T160 304zm160 0q0 10-3.125 20.5t-10.75 19T288 352t-18.125-8.5-10.75-19T256 304t3.125-20.5 10.75-19T288 256t18.125 8.5 10.75 19T320 304zm40 0q0-30-17.25-51T296 232q-10.25 0-48.75 5.25Q229.5 240 208 240t-39.25-2.75Q130.75 232 120 232q-29.5 0-46.75 21T56 304q0 22 8 38.375t20.25 25.75 30.5 15 35 7.375 37.25 1.75h42q20.5 0 37.25-1.75t35-7.375 30.5-15 20.25-25.75T360 304zm56-44q0 51.75-15.25 82.75-9.5 19.25-26.375 33.25t-35.25 21.5-42.5 11.875-42.875 5.5T212 416q-19.5 0-35.5-.75t-36.875-3.125-38.125-7.5-34.25-12.875T37 371.5t-21.5-28.75Q0 312 0 260q0-59.25 34-99-6.75-20.5-6.75-42.5 0-29 12.75-54.5 27 0 47.5 9.875t47.25 30.875Q171.5 96 212 96q37 0 70 8 26.25-20.5 46.75-30.25T376 64q12.75 25.5 12.75 54.5 0 21.75-6.75 42 34 40 34 99.5z"/></svg>
+        
+      </defs>
+    </svg>
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="drawer">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="search">
+    <label class="md-overlay" data-md-component="overlay" for="drawer"></label>
+    
+      <header class="md-header" data-md-component="header">
+  <nav class="md-header-nav md-grid">
+    <div class="md-flex">
+      <div class="md-flex__cell md-flex__cell--shrink">
+        <a href=".." title="阿里云 ECS 机器学习懒人包" class="md-header-nav__button md-logo">
+          
+            <i class="md-icon">whatshot</i>
+          
+        </a>
+      </div>
+      <div class="md-flex__cell md-flex__cell--shrink">
+        <label class="md-icon md-icon--menu md-header-nav__button" for="drawer"></label>
+      </div>
+      <div class="md-flex__cell md-flex__cell--stretch">
+        <span class="md-flex__ellipsis md-header-nav__title">
+          
+            
+              
+            
+            准备工作
+          
+        </span>
+      </div>
+      <div class="md-flex__cell md-flex__cell--shrink">
+        
+          
+            <label class="md-icon md-icon--search md-header-nav__button" for="search"></label>
+            
+<div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="search"></label>
+  <div class="md-search__inner">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" required placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="query">
+      <label class="md-icon md-search__icon" for="search"></label>
+      <button type="reset" class="md-icon md-search__icon" data-md-component="reset">&#xE5CD;</button>
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="result">
+          <div class="md-search-result__meta">
+            键入以开始搜索
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+          
+        
+      </div>
+      
+        <div class="md-flex__cell md-flex__cell--shrink">
+          <div class="md-header-nav__source">
+            
+
+
+  
+
+
+  <a href="https://github.com/glasslion/aliyun-machine-learning-for-dummies/" title="前往 Github 仓库" class="md-source" data-md-source="github">
+    
+      <div class="md-source__icon">
+        <svg viewBox="0 0 24 24" width="24" height="24">
+          <use xlink:href="#github" width="24" height="24"></use>
+        </svg>
+      </div>
+    
+    <div class="md-source__repository">
+      Star on Github
+    </div>
+  </a>
+
+          </div>
+        </div>
+      
+    </div>
+  </nav>
+</header>
+    
+    <div class="md-container">
+      
+      <main class="md-main">
+        <div class="md-main__inner md-grid" data-md-component="container">
+          
+            
+              <div class="md-sidebar md-sidebar--primary" data-md-component="navigation">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    <nav class="md-nav md-nav--primary" data-md-level="0">
+  <label class="md-nav__title md-nav__title--site" for="drawer">
+    <span class="md-nav__button md-logo">
+      
+        <i class="md-icon">whatshot</i>
+      
+    </span>
+    阿里云 ECS 机器学习懒人包
+  </label>
+  
+    <div class="md-nav__source">
+      
+
+
+  
+
+
+  <a href="https://github.com/glasslion/aliyun-machine-learning-for-dummies/" title="前往 Github 仓库" class="md-source" data-md-source="github">
+    
+      <div class="md-source__icon">
+        <svg viewBox="0 0 24 24" width="24" height="24">
+          <use xlink:href="#github" width="24" height="24"></use>
+        </svg>
+      </div>
+    
+    <div class="md-source__repository">
+      Star on Github
+    </div>
+  </a>
+
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href=".." title="首页" class="md-nav__link">
+      首页
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+  
+
+
+  <li class="md-nav__item md-nav__item--active">
+    
+    <input class="md-toggle md-nav__toggle" data-md-toggle="toc" type="checkbox" id="toc">
+    
+    
+      <label class="md-nav__link md-nav__link--active" for="toc">
+        准备工作
+      </label>
+    
+    <a href="./" title="准备工作" class="md-nav__link md-nav__link--active">
+      准备工作
+    </a>
+    
+      
+<nav class="md-nav md-nav--secondary">
+  
+  
+  
+    <label class="md-nav__title" for="toc">目录</label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#access-key" title="配置 阿里云 access key" class="md-nav__link">
+    配置 阿里云 access key
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_1" title="创建安全组" class="md-nav__link">
+    创建安全组
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ecs" title="ECS 实例类型的选择" class="md-nav__link">
+    ECS 实例类型的选择
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ssh-key" title="添加 SSH Key" class="md-nav__link">
+    添加 SSH Key
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#gitssh-key" title="添加 Git(SSH) Key" class="md-nav__link">
+    添加 Git(SSH) Key
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" title="磁盘和快照" class="md-nav__link">
+    磁盘和快照
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#jupyter-notebook" title="Jupyter Notebook" class="md-nav__link">
+    Jupyter Notebook
+  </a>
+  
+</li>
+      
+      
+      
+    </ul>
+  
+</nav>
+    
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../aws/" title="和 AWS EC2 的比较" class="md-nav__link">
+      和 AWS EC2 的比较
+    </a>
+  </li>
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="toc">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+<nav class="md-nav md-nav--secondary">
+  
+  
+  
+    <label class="md-nav__title" for="toc">目录</label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#access-key" title="配置 阿里云 access key" class="md-nav__link">
+    配置 阿里云 access key
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_1" title="创建安全组" class="md-nav__link">
+    创建安全组
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ecs" title="ECS 实例类型的选择" class="md-nav__link">
+    ECS 实例类型的选择
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ssh-key" title="添加 SSH Key" class="md-nav__link">
+    添加 SSH Key
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#gitssh-key" title="添加 Git(SSH) Key" class="md-nav__link">
+    添加 Git(SSH) Key
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" title="磁盘和快照" class="md-nav__link">
+    磁盘和快照
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#jupyter-notebook" title="Jupyter Notebook" class="md-nav__link">
+    Jupyter Notebook
+  </a>
+  
+</li>
+      
+      
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content">
+            <article class="md-content__inner md-typeset">
+              
+                
+                  <a href="https://github.com/glasslion/aliyun-machine-learning-for-dummies/edit/master/docs/preparing.md" title="编辑此页" class="md-icon md-content__icon">&#xE3C9;</a>
+                
+                
+                  <h1>准备工作</h1>
+                
+                <p>在开始前， 还有些准备工作要做。 首先， 请确保你的阿里云账户余额大于 100元， 否则你将无法购买竞价实例。</p>
+<h3 id="access-key">配置 阿里云 access key</h3>
+<p>出于安全考虑, 本项目不会把阿里云的 Access ID 和 Access Key 保存到配置文件里去, 如果你不想要在每次创建/删除实例时手动输入密码, 可以将 access key设置在 <code>ALIYUN_ACCESS_KEY_ID</code> 和 <code>ALIYUN_ACCESS_KEY_SECRET</code> 两个环境变量里。</p>
+<p>至于如何获取access key, 可以参考这篇教程: <a href="https://help.aliyun.com/knowledge_detail/38738.html">如何获取Access ID和Access Key</a></p>
+<h3 id="_1">创建安全组</h3>
+<p>阿里云的默认安全组规则只开放了 22 和 3389 端口访问。 为了通过公网访问 Jupyter Notebook, 至少还需要再开放一个端口， 本项目里 Notebook 使用的是 8888 端口。</p>
+<p>你需要进入阿里云的管理控制台， 创建一个新的安全组， 然后添加一条<em>入方向</em>的安全规则 。 <em>端口范围</em> 为 <code>8888/8888</code>。 <em>授权对象</em>为 <code>0.0.0.0/0</code>。 具体步骤可以参考这个教程: <a href="https://help.aliyun.com/document_detail/25471.html">添加安全组规则</a></p>
+<p>注意: 安全组是和阿里云的<a href="https://help.aliyun.com/document_detail/40654.html?spm=5176.doc53090.2.9.sHPohS">地域</a>绑定的, 香港的 ECS 只能使用香港的安全组, 不能使用美国的安全组.</p>
+<h3 id="ecs">ECS 实例类型的选择</h3>
+<p>ECS 支持多种不同类型的实例， 但其中大部分并不适合用来跑机器学习。即便是那些被归类为计算型(即ecs.sn1)的主机, 也只是CPU比较强劲，用来做深入学习并没有多大优势。</p>
+<p>在阿里云上。真正适合跑深度学习的主机是被归类在<strong>异构计算</strong>这个类别下。 这类主机不仅 CPU, 内存配置较高， 还搭载了性能强劲的<del>战术核</del>显卡, 非常适合用来做深度学习。 这其中又以 <em>GN5</em> 型最适合个人开发者(其实 GN4 也不错， 但现在基本买不到 GN4型的主机了)。</p>
+<p>以 GN5 系列里配置最低的规格 <em>ecs.gn5-c4g1.xlarge</em> 为例， 它配备了4*2.5GHz的 CPU, 30G 内存 和 1块 NVIDIA P100 GPU。</p>
+<p>在 <strong>计费方式</strong> 方面， 强烈推荐使用<strong>竞价实例</strong> 这一付费方式。 以<em>美国西部1区</em> 的 <em>ecs.gn5-c4g1.xlarge</em> 为例， 若使用按量付费模式， 每小时的价格为 ￥11.916， 而竞价实例模式， 每小时的价格尽为 ￥1.224。(注: 实例的价格会不断浮动， 请以阿里云官网的实时价格为准) 差别感人。</p>
+<p>至于实例所属的<strong>地域</strong>， 建议选择<strong>国外</strong>。 由于不可描述的原因， 机器学习常用到的一些库， 数据集， 在国内网络下无法下载或下载速度极慢。 使用国外的主机可以直接规避这些问题。</p>
+<h3 id="ssh-key">添加 SSH Key</h3>
+<p>你还需要在阿里云控制台导入你本机的 SSH 公钥(一般为 ~/.ssh/id_rsa.pub)。 具体步骤可以参考这个教程: <a href="https://help.aliyun.com/document_detail/51794.html?spm=5176.doc25471.6.706.Jn8xir">导入 SSH 密钥对</a></p>
+<p>本项目的自动化脚本在创建实例时， 会选择你所指定的 SSH key。 实例创建完成后， 就能通过 ssh 登录到主机了。</p>
+<h3 id="gitssh-key">添加 Git(SSH) Key</h3>
+<p>你需要在 <code>playbook/tools/files/</code> 目录下添加一对 SSH 公私钥。 这对公钥主要是为了方便向 Github 上 push。</p>
+<h3 id="_2">磁盘和快照</h3>
+<p>ECS 实例会自带一块系统盘和数据盘， 但这两块盘会随着ECS实例的删除而被同时释放。 为了持久化数据， 我采用的是再额外挂载一块数据盘的方式。 这块数据盘可以独立于ECS实例存在。 平时的操作都应在这块磁盘上进行（挂载在 <code>/mnt/ml</code> 目录下）。</p>
+<p>当然， 你还可以把这块数据盘保存为快照来进一步节省费用。
+运行 <code>start_instance.py</code> 时，在交互模式下， 你有3种选项可以选择:
+1. 创建一块全新的数据盘(一般只有首次运行时， 才会用到)
+2. 使用一块现有的数据盘(会列出你账户下所有的数据盘，供你选择)
+3. 使用一个现有的磁盘快照来创建一个新的数据盘(会给出你的快照列表)
+类似的， 在运行 <code>delete_instance.py</code> 销毁实例时， 你可以选择是否为当前的数据盘创建快照?</p>
+<h3 id="jupyter-notebook">Jupyter Notebook</h3>
+<p>本项目默认的 Jupyter Notebook 端口为 8888。 为了安全， Notebook 只开放了通过 https 的方式来访问, 即 <code>https://&lt;公网 ip&gt;:8888/</code>。 由于 HTTPS 使用的是自签名证书， 首次访问时，浏览器会有相应的警告。</p>
+<p>Jupyter Notebook 应当被配置为通过密码认证后才能访问。<code>playbook/roles/libs/files/</code> 目录下有个 <code>jupyter_notebook_config.py.example</code>样例配置文件。 将这个文件重命名为 <code>jupyter_notebook_config.py</code>, <strong>并替换其中的密码哈希</strong>即可。 你可以参考 Jupyter 文档 <a href="http://jupyter-notebook.readthedocs.io/en/stable/public_server.html#Preparing-a-hashed-password">Preparing a hashed password</a> 来设置你自己的哈希。注意，尽管 <code>jupyter_notebook_config.py</code> 里的密码是哈希过的， 你仍然应避免把它泄漏给其他人， 事实上， 本项目已经把 它加入到 .gitignore 中了。</p>
+                
+                  
+                
+              
+              
+                
+              
+            </article>
+          </div>
+        </div>
+      </main>
+      
+        
+<footer class="md-footer">
+  
+    <div class="md-footer-nav">
+      <nav class="md-footer-nav__inner md-grid">
+        
+          <a href=".." title="首页" class="md-flex md-footer-nav__link md-footer-nav__link--prev" rel="prev">
+            <div class="md-flex__cell md-flex__cell--shrink">
+              <i class="md-icon md-icon--arrow-back md-footer-nav__button"></i>
+            </div>
+            <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
+              <span class="md-flex__ellipsis">
+                <span class="md-footer-nav__direction">
+                  后退
+                </span>
+                首页
+              </span>
+            </div>
+          </a>
+        
+        
+          <a href="../aws/" title="和 AWS EC2 的比较" class="md-flex md-footer-nav__link md-footer-nav__link--next" rel="next">
+            <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
+              <span class="md-flex__ellipsis">
+                <span class="md-footer-nav__direction">
+                  前进
+                </span>
+                和 AWS EC2 的比较
+              </span>
+            </div>
+            <div class="md-flex__cell md-flex__cell--shrink">
+              <i class="md-icon md-icon--arrow-forward md-footer-nav__button"></i>
+            </div>
+          </a>
+        
+      </nav>
+    </div>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-footer-copyright">
+        
+        powered by
+        <a href="http://www.mkdocs.org" title="MkDocs">MkDocs</a>
+        and
+        <a href="http://squidfunk.github.io/mkdocs-material/" title="Material for MkDocs">
+          Material for MkDocs</a>
+      </div>
+      
+        
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    
+      <script src="../assets/javascripts/application-8e4952e681.js"></script>
+      
+        
+        
+          
+          <script src="../assets/javascripts/lunr/lunr.stemmer.support.js"></script>
+          
+            
+              
+              <script src="../assets/javascripts/lunr/lunr.zh.js"></script>
+            
+          
+          
+        
+      
+      <script>app.initialize({version:"0.17.1",url:{base:".."}})</script>
+      
+    
+    
+      
+    
+  </body>
+</html>
