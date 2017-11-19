@@ -9,6 +9,7 @@ import time
 
 import click
 import six
+from retrying import retry
 from aliyunsdkcore.client import AcsClient
 from aliyunsdkecs.request.v20140526 import (DescribeDisksRequest,
                                             CreateDiskRequest,
@@ -28,6 +29,7 @@ def force_text(s, encoding='utf-8'):
         return s.decode(encoding)
     return s
 
+
 class Config(object):
     def __init__(self, *args, **kwargs):
         self._config = OrderedDict()
@@ -41,7 +43,7 @@ class Config(object):
             with io.open(CONFIG_FILE, encoding='utf-8') as f:
                 self._config = json.loads(f.read(), object_pairs_hook=OrderedDict)
         except (IOError, OSError, ValueError):
-            pass
+            click.echo("Can not find the config.json file.")
 
     def save(self):
         """
@@ -123,7 +125,7 @@ class Config(object):
         else:
             ZonesSelect().show(config=self)
             SnapshotsSelect().show(config=self)
-            create_disk_from_snapshot(config)
+            create_disk_from_snapshot(config=self)
         KeyPairsSelect().show(config=self)
         ImagesSelect().show(config=self)
 
@@ -148,13 +150,17 @@ class Config(object):
 
         self.save()
 
-    def create_api_client(self):
+    def create_api_client(self, region_id=None):
+        if region_id is None:
+            region_id = self.get('RegionId')
         return AcsClient(
             self._secrets['access_key_id'],
             self._secrets['access_key_secret'],
-            self.get('RegionId'),
+            region_id,
         )
 
+
+@retry(stop_max_attempt_number=5, wait_fixed=2000)
 def do_action(client, request):
     """
     Send Aliyun API request with client and return json result as a dict
