@@ -1,7 +1,7 @@
 # 阿里云 ECS 机器学习懒人包
 
 ## DEMO
-
+[使用文档](https://glasslion.github.io/aliyun-machine-learning-for-dummies/)
 
 ## 准备工作
 本项目能帮助你在阿里云上全自动地创建、启动、安装、配置销毁用于机器学习的云服务器（ECS）实例。
