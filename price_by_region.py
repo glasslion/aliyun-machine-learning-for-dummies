@@ -13,10 +13,9 @@ def main():
     config = Config()
     config.obtain_secret('access_key_id')
     config.obtain_secret('access_key_secret')
-    client  = config.create_api_client('cn-hongkong')
 
     table = []
-    client = config.create_api_client()
+    client  = config.create_api_client('cn-hongkong')
     regions = get_regions(client)
     for region in regions:
         client  = config.create_api_client(region['RegionId'])
@@ -42,7 +41,6 @@ def main():
                     pass
     table.sort(key=lambda x: (x[0], x[-1]))
     print(tabulate(table))
-
 
 
 def get_regions(client):

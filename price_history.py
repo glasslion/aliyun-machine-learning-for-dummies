@@ -15,13 +15,11 @@ def main():
     config = Config()
     config.obtain_secret('access_key_id')
     config.obtain_secret('access_key_secret')
-    # config.load(file_must_exist=True)
 
     client  = config.create_api_client('cn-hongkong')
     RegionIdSelect().show(config, client=client)
     ZonesSelect().show(config)
     client  = config.create_api_client()
-
 
     table = []
     request = DescribeSpotPriceHistoryRequest.DescribeSpotPriceHistoryRequest()
