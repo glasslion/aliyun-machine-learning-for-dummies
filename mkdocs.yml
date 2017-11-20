@@ -2,6 +2,7 @@ site_name: 阿里云 ECS 机器学习懒人包
 pages:
     - 首页: index.md
     - 准备工作: preparing.md
+    - 针对国内网络的优化: china.md
     - 和 AWS EC2 的比较: aws.md
 theme:
   name: 'material'
