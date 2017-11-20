@@ -13,7 +13,7 @@
 
 - name: Define conda variables
   set_fact:
-    conda_url: "{{ 'https://mirrors.tuna.tsinghua.edu.cn/anaconda/archive/Anaconda3-5.0.1-Linux-x86_64.sh' if china==true else 'https://repo.continuum.io/archive/Anaconda3-5.0.1-Linux-x86_64.sh' }}"
+    conda_url: "{{ 'https://mirrors.tuna.tsinghua.edu.cn/anaconda/archive/Anaconda3-5.0.1-Linux-x86_64.sh' if china is defined else 'https://repo.continuum.io/archive/Anaconda3-5.0.1-Linux-x86_64.sh' }}"
 
 - name: Download anaconda installer
   get_url: 'url={{conda_url}} dest=/mnt/ml/cache/anaconda3.sh'
