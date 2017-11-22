@@ -32,7 +32,7 @@
     
     
       
-        <title>和 AWS EC2 的比较 - 阿里云 ECS 机器学习懒人包</title>
+        <title>针对国内网络的优化 - 阿里云 ECS 机器学习懒人包</title>
       
     
     
@@ -92,7 +92,7 @@
             
               
             
-            和 AWS EC2 的比较
+            针对国内网络的优化
           
         </span>
       </div>
@@ -224,18 +224,6 @@
       
       
 
-
-  <li class="md-nav__item">
-    <a href="../china/" title="针对国内网络的优化" class="md-nav__link">
-      针对国内网络的优化
-    </a>
-  </li>
-
-    
-      
-      
-      
-
   
 
 
@@ -244,10 +232,47 @@
     <input class="md-toggle md-nav__toggle" data-md-toggle="toc" type="checkbox" id="toc">
     
     
-    <a href="./" title="和 AWS EC2 的比较" class="md-nav__link md-nav__link--active">
-      和 AWS EC2 的比较
+      <label class="md-nav__link md-nav__link--active" for="toc">
+        针对国内网络的优化
+      </label>
+    
+    <a href="./" title="针对国内网络的优化" class="md-nav__link md-nav__link--active">
+      针对国内网络的优化
     </a>
     
+      
+<nav class="md-nav md-nav--secondary">
+  
+  
+  
+    <label class="md-nav__title" for="toc">目录</label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#https" title="https 可能无法访问问题" class="md-nav__link">
+    https 可能无法访问问题
+  </a>
+  
+</li>
+      
+      
+      
+    </ul>
+  
+</nav>
+    
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../aws/" title="和 AWS EC2 的比较" class="md-nav__link">
+      和 AWS EC2 的比较
+    </a>
   </li>
 
     
@@ -258,20 +283,53 @@
               </div>
             
             
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="toc">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+<nav class="md-nav md-nav--secondary">
+  
+  
+  
+    <label class="md-nav__title" for="toc">目录</label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#https" title="https 可能无法访问问题" class="md-nav__link">
+    https 可能无法访问问题
+  </a>
+  
+</li>
+      
+      
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
           
           <div class="md-content">
             <article class="md-content__inner md-typeset">
               
                 
-                  <a href="https://github.com/glasslion/aliyun-machine-learning-for-dummies/edit/master/docs/aws.md" title="编辑此页" class="md-icon md-content__icon">&#xE3C9;</a>
+                  <a href="https://github.com/glasslion/aliyun-machine-learning-for-dummies/edit/master/docs/china.md" title="编辑此页" class="md-icon md-content__icon">&#xE3C9;</a>
                 
                 
-                  <h1>和 AWS EC2 的比较</h1>
+                  <h1>针对国内网络的优化</h1>
                 
-                <p>Amazon Web Services (AWS) 上和 阿里云 GN5 规格比较接近的是 <a href="https://aws.amazon.com/ec2/instance-types/p2/">P2</a> 实例。其使用的是 NVidia Tesla K80 显卡。</p>
-<p>从下图不难看出， GN5 目前使用的 P100 显卡
-<img alt="pic" src="../img/deep_learning_benchmark_per-network_speedups_on_Tesla_P100_PCIe.png" /></p>
-<p>当然 AWS 作为云计算业界的标杆， 肯定也有其优势的地方。 例如， AWS EC2 实例在停机后就只收取磁盘费用， 而阿里云要在实例删除后才停止收费。 此外 AWS 还提供了 Amazon Machine Image (AMI)， 即专为机器学习定制的系统镜像， 简化了 NVidia 驱动和 CUDA 的安装。而且 AWS 的竞价实例模式(Spot Instances) 已经推出很久了， 其价格已经十分稳定， 基本没有大的波动。 而阿里云在今年双十一后， 较长一段时间都维持了高价。</p>
+                <p>在之前的文档里， 已经建议大家优先使用阿里云海外的实例。 但有时海外的实例价格可能比国内高很多，或者是某些海外实例由于不可描述的原因在国内访问困难， 那么选择阿里云国内的实例也未尝不可。</p>
+<p>在运行 playbook 时， 指定一个额外的参数 <code>china</code> (e.g. <code>ansible-playbook ecs-gpu-instance.yml -e china=1</code>)， 就会针对国内的网络环境做一些优化:</p>
+<ul>
+<li>配置 pip 使用阿里云的<a href="http://mirrors.aliyun.com/pypi/simple/">镜像</a></li>
+<li>配置 conda 使用清华大学的<a href="https://mirrors.tuna.tsinghua.edu.cn/help/anaconda/">镜像</a></li>
+<li>安装 tensorflow 时, 使用清华大学的<a href="https://mirrors.tuna.tsinghua.edu.cn/help/tensorflow/">镜像</a></li>
+</ul>
+<p>这样可以极大地加快一些机器学习， 科学计算相关的库的安装速度。</p>
+<h3 id="https">https 可能无法访问问题</h3>
+<p>国内部分运营商（例如上海电信) 会屏蔽通过 https 直连海外 ip。 打开 <code>jupyter_notebook_config.py</code> 注释掉以 <code>c.NotebookApp.certfile</code>, <code>c.NotebookApp.keyfile</code> 开头的两行， 即可让 Jupyter Notebbok 使用 http 而非 https 模式。</p>
                 
                   
                 
@@ -290,7 +348,7 @@
     <div class="md-footer-nav">
       <nav class="md-footer-nav__inner md-grid">
         
-          <a href="../china/" title="针对国内网络的优化" class="md-flex md-footer-nav__link md-footer-nav__link--prev" rel="prev">
+          <a href="../preparing/" title="准备工作" class="md-flex md-footer-nav__link md-footer-nav__link--prev" rel="prev">
             <div class="md-flex__cell md-flex__cell--shrink">
               <i class="md-icon md-icon--arrow-back md-footer-nav__button"></i>
             </div>
@@ -299,11 +357,25 @@
                 <span class="md-footer-nav__direction">
                   后退
                 </span>
-                针对国内网络的优化
+                准备工作
               </span>
             </div>
           </a>
         
+        
+          <a href="../aws/" title="和 AWS EC2 的比较" class="md-flex md-footer-nav__link md-footer-nav__link--next" rel="next">
+            <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
+              <span class="md-flex__ellipsis">
+                <span class="md-footer-nav__direction">
+                  前进
+                </span>
+                和 AWS EC2 的比较
+              </span>
+            </div>
+            <div class="md-flex__cell md-flex__cell--shrink">
+              <i class="md-icon md-icon--arrow-forward md-footer-nav__button"></i>
+            </div>
+          </a>
         
       </nav>
     </div>
