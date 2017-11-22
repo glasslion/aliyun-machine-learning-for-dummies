@@ -251,13 +251,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#ecs" title="ECS 实例类型的选择" class="md-nav__link">
-    ECS 实例类型的选择
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#ssh-key" title="添加 SSH Key" class="md-nav__link">
     添加 SSH Key
   </a>
@@ -291,6 +284,18 @@
   
 </nav>
     
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../choose_instance/" title="怎样选择最合适的实例" class="md-nav__link">
+      怎样选择最合适的实例
+    </a>
   </li>
 
     
@@ -351,13 +356,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#ecs" title="ECS 实例类型的选择" class="md-nav__link">
-    ECS 实例类型的选择
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#ssh-key" title="添加 SSH Key" class="md-nav__link">
     添加 SSH Key
   </a>
@@ -408,19 +406,16 @@
 <h3 id="access-key">配置 阿里云 access key</h3>
 <p>出于安全考虑, 本项目不会把阿里云的 Access ID 和 Access Key 保存到配置文件里去, 如果你不想要在每次创建/删除实例时手动输入密码, 可以将 access key设置在 <code>ALIYUN_ACCESS_KEY_ID</code> 和 <code>ALIYUN_ACCESS_KEY_SECRET</code> 两个环境变量里。</p>
 <p>至于如何获取access key, 可以参考这篇教程: <a href="https://help.aliyun.com/knowledge_detail/38738.html">如何获取Access ID和Access Key</a></p>
+<p><img alt="pic" src="../img/access_key.png" /></p>
 <h3 id="_1">创建安全组</h3>
 <p>阿里云的默认安全组规则只开放了 22 和 3389 端口访问。 为了通过公网访问 Jupyter Notebook, 至少还需要再开放一个端口， 本项目里 Notebook 使用的是 8888 端口。</p>
 <p>你需要进入阿里云的管理控制台， 创建一个新的安全组， 然后添加一条<em>入方向</em>的安全规则 。 <em>端口范围</em> 为 <code>8888/8888</code>。 <em>授权对象</em>为 <code>0.0.0.0/0</code>。 具体步骤可以参考这个教程: <a href="https://help.aliyun.com/document_detail/25471.html">添加安全组规则</a></p>
 <p>注意: 安全组是和阿里云的<a href="https://help.aliyun.com/document_detail/40654.html?spm=5176.doc53090.2.9.sHPohS">地域</a>绑定的, 香港的 ECS 只能使用香港的安全组, 不能使用美国的安全组.</p>
-<h3 id="ecs">ECS 实例类型的选择</h3>
-<p>ECS 支持多种不同类型的实例， 但其中大部分并不适合用来跑机器学习。即便是那些被归类为计算型(即ecs.sn1)的主机, 也只是CPU比较强劲，用来做深入学习并没有多大优势。</p>
-<p>在阿里云上。真正适合跑深度学习的主机是被归类在<strong>异构计算</strong>这个类别下。 这类主机不仅 CPU, 内存配置较高， 还搭载了性能强劲的<del>战术核</del>显卡, 非常适合用来做深度学习。 这其中又以 <em>GN5</em> 型最适合个人开发者(其实 GN4 也不错， 但现在基本买不到 GN4型的主机了)。</p>
-<p>以 GN5 系列里配置最低的规格 <em>ecs.gn5-c4g1.xlarge</em> 为例， 它配备了4*2.5GHz的 CPU, 30G 内存 和 1块 NVIDIA P100 GPU。</p>
-<p>在 <strong>计费方式</strong> 方面， 强烈推荐使用<strong>竞价实例</strong> 这一付费方式。 以<em>美国西部1区</em> 的 <em>ecs.gn5-c4g1.xlarge</em> 为例， 若使用按量付费模式， 每小时的价格为 ￥11.916， 而竞价实例模式， 每小时的价格尽为 ￥1.224。(注: 实例的价格会不断浮动， 请以阿里云官网的实时价格为准) 差别感人。</p>
-<p>至于实例所属的<strong>地域</strong>， 建议选择<strong>国外</strong>。 由于不可描述的原因， 机器学习常用到的一些库， 数据集， 在国内网络下无法下载或下载速度极慢。 使用国外的主机可以直接规避这些问题。</p>
+<p><img alt="pic" src="../img/security_group.png" /></p>
 <h3 id="ssh-key">添加 SSH Key</h3>
 <p>你还需要在阿里云控制台导入你本机的 SSH 公钥(一般为 ~/.ssh/id_rsa.pub)。 具体步骤可以参考这个教程: <a href="https://help.aliyun.com/document_detail/51794.html?spm=5176.doc25471.6.706.Jn8xir">导入 SSH 密钥对</a></p>
 <p>本项目的自动化脚本在创建实例时， 会选择你所指定的 SSH key。 实例创建完成后， 就能通过 ssh 登录到主机了。</p>
+<p><img alt="pic" src="../img/ssh_key.png" /></p>
 <h3 id="gitssh-key">添加 Git(SSH) Key</h3>
 <p>你需要在 <code>playbook/tools/files/</code> 目录下添加一对 SSH 公私钥。 这对公钥主要是为了方便向 Github 上 push。</p>
 <h3 id="_2">磁盘和快照</h3>
@@ -467,13 +462,13 @@
           </a>
         
         
-          <a href="../china/" title="针对国内网络的优化" class="md-flex md-footer-nav__link md-footer-nav__link--next" rel="next">
+          <a href="../choose_instance/" title="怎样选择最合适的实例" class="md-flex md-footer-nav__link md-footer-nav__link--next" rel="next">
             <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
               <span class="md-flex__ellipsis">
                 <span class="md-footer-nav__direction">
                   前进
                 </span>
-                针对国内网络的优化
+                怎样选择最合适的实例
               </span>
             </div>
             <div class="md-flex__cell md-flex__cell--shrink">

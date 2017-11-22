@@ -32,7 +32,7 @@
     
     
       
-        <title>和 AWS EC2 的比较 - 阿里云 ECS 机器学习懒人包</title>
+        <title>怎样选择最合适的实例 - 阿里云 ECS 机器学习懒人包</title>
       
     
     
@@ -92,7 +92,7 @@
             
               
             
-            和 AWS EC2 的比较
+            怎样选择最合适的实例
           
         </span>
       </div>
@@ -224,11 +224,50 @@
       
       
 
+  
 
-  <li class="md-nav__item">
-    <a href="../choose_instance/" title="怎样选择最合适的实例" class="md-nav__link">
+
+  <li class="md-nav__item md-nav__item--active">
+    
+    <input class="md-toggle md-nav__toggle" data-md-toggle="toc" type="checkbox" id="toc">
+    
+    
+      <label class="md-nav__link md-nav__link--active" for="toc">
+        怎样选择最合适的实例
+      </label>
+    
+    <a href="./" title="怎样选择最合适的实例" class="md-nav__link md-nav__link--active">
       怎样选择最合适的实例
     </a>
+    
+      
+<nav class="md-nav md-nav--secondary">
+  
+  
+  
+    <label class="md-nav__title" for="toc">目录</label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" title="实例类型的选择" class="md-nav__link">
+    实例类型的选择
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" title="挑选价格最低的区域" class="md-nav__link">
+    挑选价格最低的区域
+  </a>
+  
+</li>
+      
+      
+      
+    </ul>
+  
+</nav>
+    
   </li>
 
     
@@ -248,18 +287,11 @@
       
       
 
-  
 
-
-  <li class="md-nav__item md-nav__item--active">
-    
-    <input class="md-toggle md-nav__toggle" data-md-toggle="toc" type="checkbox" id="toc">
-    
-    
-    <a href="./" title="和 AWS EC2 的比较" class="md-nav__link md-nav__link--active">
+  <li class="md-nav__item">
+    <a href="../aws/" title="和 AWS EC2 的比较" class="md-nav__link">
       和 AWS EC2 的比较
     </a>
-    
   </li>
 
     
@@ -270,26 +302,63 @@
               </div>
             
             
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="toc">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+<nav class="md-nav md-nav--secondary">
+  
+  
+  
+    <label class="md-nav__title" for="toc">目录</label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" title="实例类型的选择" class="md-nav__link">
+    实例类型的选择
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" title="挑选价格最低的区域" class="md-nav__link">
+    挑选价格最低的区域
+  </a>
+  
+</li>
+      
+      
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
           
           <div class="md-content">
             <article class="md-content__inner md-typeset">
               
                 
-                  <a href="https://github.com/glasslion/aliyun-machine-learning-for-dummies/edit/master/docs/aws.md" title="编辑此页" class="md-icon md-content__icon">&#xE3C9;</a>
+                  <a href="https://github.com/glasslion/aliyun-machine-learning-for-dummies/edit/master/docs/choose_instance.md" title="编辑此页" class="md-icon md-content__icon">&#xE3C9;</a>
                 
                 
-                  <h1>和 AWS EC2 的比较</h1>
+                  <h1>怎样选择最合适的实例</h1>
                 
-                <p>Amazon Web Services (AWS) 上和 阿里云 GN5 规格比较接近的是 <a href="https://aws.amazon.com/ec2/instance-types/p2/">P2</a> 实例。其使用的是 NVidia Tesla K80 显卡。</p>
-<p>从下图不难看出， GN5 目前使用的 P100 显卡
-<img alt="pic" src="../img/deep_learning_benchmark_per-network_speedups_on_Tesla_P100_PCIe.png" /></p>
-<p>当然 AWS 作为云计算业界的标杆， 自然也有其优势的地方:</p>
-<ul>
-<li>AWS 的竞价实例模式(Spot Instances) 已经推出很久了， 其价格已趋于稳定， 基本没有大的波动。 而阿里云一些区域的价格波动幅度还是很大的。你可能会迫于价格，花更多时间精力在在个区域间来回迁移。</li>
-<li>如果要在不同的区域间迁移实例， AWS 上会更加简单。</li>
-<li>AWS EC2 实例在停机后就只收取磁盘费用， 而阿里云要在实例删除后才停止收费。</li>
-<li>AWS 还提供了 Amazon Machine Image (AMI)， 即专为机器学习定制的系统镜像， 简化了 NVidia 驱动和 CUDA 的安装。而且</li>
-</ul>
+                <h3 id="_1">实例类型的选择</h3>
+<p>ECS 支持多种不同类型的实例， 但其中大部分并不适合用来跑机器学习。即便是那些被归类为计算型(即ecs.sn1)的主机, 也只是CPU比较强劲，用来做深入学习并没有多大优势。</p>
+<p>在阿里云上。真正适合跑深度学习的主机是被归类在<strong>异构计算</strong>这个类别下。 这类主机不仅 CPU, 内存配置较高， 还搭载了性能强劲的<del>战术核</del>显卡, 非常适合用来做深度学习。 这其中又以 <em>GN5</em> 型最适合个人开发者(其实 GN4 也不错， 但现在基本买不到 GN4型的主机了)。</p>
+<p>以 GN5 系列里配置最低的规格 <em>ecs.gn5-c4g1.xlarge</em> 为例， 它配备了4*2.5GHz的 CPU, 30G 内存 和 1块 NVIDIA P100 GPU。</p>
+<p><img alt="pic" src="../img/ecs_gpu_instances.png" /></p>
+<p>在 <strong>计费方式</strong> 方面， 强烈推荐使用<strong>竞价实例</strong> 这一付费方式。 以<em>美国西部1区</em> 的 <em>ecs.gn5-c4g1.xlarge</em> 为例， 若使用按量付费模式， 每小时的价格为 ￥11.916， 而竞价实例模式， 每小时的价格尽为 ￥1.224。(注: 实例的价格会不断浮动， 请以阿里云官网的实时价格为准) 差别感人。</p>
+<p>至于实例所属的<strong>地域</strong>， 建议选择<strong>国外</strong>。 由于不可描述的原因， 机器学习常用到的一些库， 数据集， 在国内网络下无法下载或下载速度极慢。 使用国外的主机可以直接规避这些问题。</p>
+<h2 id="_2">挑选价格最低的区域</h2>
+<p>竞价实例的价格是波动的， 而且不同区域差别较大。 鉴于本教程的使用者大多还是以学习、实验和参加 Kaggle 之类的竞赛为主， 而不是用来跑实际的业务， 因此对实例所属的地理区域不是很敏感。 那么选择价格最低的区域一般是没错的。 本项目提供个了几个工具来帮你更好地选择阿里云实例的区域i:</p>
+<p><code>price_by_region.py</code> 会以表格的形式列出阿里云所有区域内，各种 GPU 实例当前的价格。</p>
+<p><img alt="pic" src="../img/price_by_region.png" /></p>
+<p>你还可以运行 <code>price_history.py</code> 来查看指定区域里 30天内的实例价格的历史， 如果你看中的区域近期价格比较稳定的话， 就可以放心入手了。</p>
+<p><img alt="pic" src="../img/price_history.png" /></p>
                 
                   
                 
@@ -308,7 +377,7 @@
     <div class="md-footer-nav">
       <nav class="md-footer-nav__inner md-grid">
         
-          <a href="../china/" title="针对国内网络的优化" class="md-flex md-footer-nav__link md-footer-nav__link--prev" rel="prev">
+          <a href="../preparing/" title="准备工作" class="md-flex md-footer-nav__link md-footer-nav__link--prev" rel="prev">
             <div class="md-flex__cell md-flex__cell--shrink">
               <i class="md-icon md-icon--arrow-back md-footer-nav__button"></i>
             </div>
@@ -317,11 +386,25 @@
                 <span class="md-footer-nav__direction">
                   后退
                 </span>
-                针对国内网络的优化
+                准备工作
               </span>
             </div>
           </a>
         
+        
+          <a href="../china/" title="针对国内网络的优化" class="md-flex md-footer-nav__link md-footer-nav__link--next" rel="next">
+            <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
+              <span class="md-flex__ellipsis">
+                <span class="md-footer-nav__direction">
+                  前进
+                </span>
+                针对国内网络的优化
+              </span>
+            </div>
+            <div class="md-flex__cell md-flex__cell--shrink">
+              <i class="md-icon md-icon--arrow-forward md-footer-nav__button"></i>
+            </div>
+          </a>
         
       </nav>
     </div>
