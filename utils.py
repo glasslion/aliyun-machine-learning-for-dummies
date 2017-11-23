@@ -4,12 +4,13 @@ from __future__ import absolute_import, print_function, unicode_literals
 import io
 import json
 import os
+import logging
 from collections import OrderedDict
 import time
 
 import click
 import six
-from retrying import retry
+from tenacity import retry, after_log,stop_after_attempt, wait_exponential
 from aliyunsdkcore.client import AcsClient
 from aliyunsdkecs.request.v20140526 import (DescribeDisksRequest,
                                             CreateDiskRequest,
@@ -22,7 +23,12 @@ from aliyunsdkecs.request.v20140526 import (DescribeDisksRequest,
                                             DescribeZonesRequest,
                                             DescribeSecurityGroupsRequest)
 
+
+logger = logging.getLogger(__name__)
+
+
 CONFIG_FILE = 'config.json'
+
 
 def force_text(s, encoding='utf-8'):
     if isinstance(s, six.binary_type):
@@ -119,7 +125,7 @@ class Config(object):
 你可以选择是创建一块全新的磁盘(n)， 还是重用现有的一块磁盘(e)，或者是使用快照创建一块新的磁盘(s), [n/e/s]"
         answer = click.prompt(msg).lower()
         if answer == 'n':
-            create_empty_disk(config)
+            create_empty_disk(config=self)
         elif answer == 'e':
             DisksSelect().show(config=self)
         else:
@@ -160,7 +166,9 @@ class Config(object):
         )
 
 
-@retry(stop_max_attempt_number=5, wait_fixed=2000)
+# @retry(
+#     reraise=True, after=after_log(logger, logging.DEBUG),
+#     stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, max=10))
 def do_action(client, request):
     """
     Send Aliyun API request with client and return json result as a dict
