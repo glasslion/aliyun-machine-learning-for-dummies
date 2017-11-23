@@ -21,6 +21,10 @@
   shell: dpkg -i /mnt/ml/cache/cuda.deb
   when: installed.stat.exists == False
 
+- name: Update apt for cuda
+  apt:
+    update_cache: yes
+
 - name: Install build dependencies
   apt: name={{item}}
   with_items:

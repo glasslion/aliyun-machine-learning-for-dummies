@@ -1,6 +1,6 @@
 Amazon Web Services (AWS) 上和 阿里云 GN5 规格比较接近的是 [P2](https://aws.amazon.com/ec2/instance-types/p2/) 实例。其使用的是 NVidia Tesla K80 显卡。
 
-从下图不难看出， GN5 目前使用的 P100 显卡
+从下图不难看出， GN5 目前使用的 P100 显卡显然更具优势。
 ![pic](img/deep_learning_benchmark_per-network_speedups_on_Tesla_P100_PCIe.png)
 
 

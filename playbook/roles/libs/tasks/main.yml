@@ -10,5 +10,6 @@
  - { import_tasks: mxnet.yml, tags: 'mxnet' }
  - { import_tasks: pytorch.yml, tags: 'pytorch' }
  - { import_tasks: theano.yml, tags: theano}
+ - { import_tasks: keras.yml, tags: keras}
  - { import_tasks: misc_packges.yml, tags: misc_packges}
 

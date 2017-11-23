@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from tabulate import tabulate
 
+import click
+
 from utils import Config, do_action
 
 from aliyunsdkecs.request.v20140526 import DescribeSpotPriceHistoryRequest
@@ -8,12 +10,13 @@ from aliyunsdkecs.request.v20140526 import DescribeRegionsRequest
 from aliyunsdkecs.request.v20140526 import DescribeZonesRequest
 
 
-
+@click.command()
 def main():
     config = Config()
     config.obtain_secret('access_key_id')
     config.obtain_secret('access_key_secret')
 
+    click.echo("由于需要对地域，可用区， 实例类型的每种组合都查询一次价格， 查询时间可能较长， 请耐心等待")
     table = []
     client  = config.create_api_client('cn-hongkong')
     regions = get_regions(client)

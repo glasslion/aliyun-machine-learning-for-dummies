@@ -1,0 +1,13 @@
+---
+- name: Install Keras
+  shell: "{{conda_directory}}/bin/pip install keras"
+  become_user: ml
+
+- name: Ensures .keras dir exists
+  file: path=~/.keras state=directory
+  become_user: ml
+
+
+- name: Copy keras.json file to instance
+  copy: src=keras.json dest=~/.keras/keras.json
+  become_user: ml
