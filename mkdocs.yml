@@ -3,6 +3,7 @@ pages:
     - 首页: index.md
     - 准备工作: preparing.md
     - 怎样选择最合适的实例: choose_instance.md
+    - 实战: hands_on.md
     - 针对国内网络的优化: china.md
     - 和 AWS EC2 的比较: aws.md
 theme:
