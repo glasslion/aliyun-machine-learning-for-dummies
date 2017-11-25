@@ -9,6 +9,7 @@ import time
 
 import click
 import six
+from retrying import retry
 from aliyunsdkcore.client import AcsClient
 from aliyunsdkecs.request.v20140526 import (DescribeDisksRequest,
                                             CreateDiskRequest,
@@ -28,6 +29,7 @@ def force_text(s, encoding='utf-8'):
         return s.decode(encoding)
     return s
 
+
 class Config(object):
     def __init__(self, *args, **kwargs):
         self._config = OrderedDict()
@@ -41,7 +43,7 @@ class Config(object):
             with io.open(CONFIG_FILE, encoding='utf-8') as f:
                 self._config = json.loads(f.read(), object_pairs_hook=OrderedDict)
         except (IOError, OSError, ValueError):
-            pass
+            click.echo("Can not find the config.json file.")
 
     def save(self):
         """
@@ -118,12 +120,16 @@ class Config(object):
         InstanceTypeSelect().show(config=self)
         SecurityGroupsSelect().show(config=self)
         msg = "ECS实例自带的磁盘， 在实例被删除后， 也会被删除。为了保存你的工作， 你需要额外再挂载一块磁盘。\
-你可以选择使用你账户里现有的一块磁盘(e)，或者是使用快照创建一块新的磁盘(s), [e/s]"
+你可以选择是创建一块全新的磁盘(n)， 还是重用现有的一块磁盘(e)，或者是使用快照创建一块新的磁盘(s), [n/e/s]"
         answer = click.prompt(msg).lower()
-        if answer == 'e':
+        if answer == 'n':
+            create_empty_disk(config)
+        elif answer == 'e':
             DisksSelect().show(config=self)
         else:
+            ZonesSelect().show(config=self)
             SnapshotsSelect().show(config=self)
+            create_disk_from_snapshot(config=self)
         KeyPairsSelect().show(config=self)
         ImagesSelect().show(config=self)
 
@@ -148,13 +154,17 @@ class Config(object):
 
         self.save()
 
-    def create_api_client(self):
+    def create_api_client(self, region_id=None):
+        if region_id is None:
+            region_id = self.get('RegionId')
         return AcsClient(
             self._secrets['access_key_id'],
             self._secrets['access_key_secret'],
-            self.get('RegionId'),
+            region_id,
         )
 
+
+@retry(stop_max_attempt_number=5, wait_fixed=2000)
 def do_action(client, request):
     """
     Send Aliyun API request with client and return json result as a dict
@@ -241,6 +251,7 @@ class DisksSelect(BaseConfigParameterSelect):
     def handle_selected_item(self, item, config):
         config.set(('CreateInstanceParams', 'ZoneId'), item['ZoneId'])
 
+
 class SnapshotsSelect(BaseConfigParameterSelect):
     name = "用于创建磁盘的快照"
     key = 'SnapshotId'
@@ -248,19 +259,6 @@ class SnapshotsSelect(BaseConfigParameterSelect):
     items_getter = lambda self, x: x['Snapshots']['Snapshot']
     item_key = "SnapshotId"
     select_item_formatter = lambda self, x: "{} {} {}G".format(x['SnapshotId'], x['SnapshotName'], x['SourceDiskSize'])
-
-    def handle_selected_item(self, item, config):
-        client = config.create_api_client()
-        ZonesSelect().show(config=config)
-        # CreateDisk
-        request = CreateDiskRequest.CreateDiskRequest()
-        request.set_DiskName("ml-data-disk")
-        request.set_DiskCategory("cloud_ssd")
-        request.set_SnapshotId(item['SnapshotId'])
-        request.set_ZoneId(config.get(['CreateInstanceParams', 'ZoneId']))
-        result = do_action(client, request)
-        DiskId = result['DiskId']
-        config.set('DiskId', DiskId)
 
 
 class ZonesSelect(BaseConfigParameterSelect):
@@ -280,6 +278,7 @@ class KeyPairsSelect(BaseConfigParameterSelect):
     item_key = "KeyPairName"
     select_item_formatter = lambda self, x: x['KeyPairName']
 
+
 class ImagesSelect(BaseConfigParameterSelect):
     name = "操作系统镜像"
     key = ['CreateInstanceParams', 'ImageId']
@@ -292,6 +291,33 @@ class ImagesSelect(BaseConfigParameterSelect):
     def set_request_parameters(self, request):
         request.set_PageSize(50)
         request.set_OSType("linux")
+
+
+def create_empty_disk(config):
+    ZonesSelect().show(config=config)
+
+    client = config.create_api_client()
+    request = CreateDiskRequest.CreateDiskRequest()
+    request.set_DiskName("ml-data-disk")
+    request.set_DiskCategory("cloud_ssd")
+    request.set_ZoneId(config.get(['CreateInstanceParams', 'ZoneId']))
+    size = click.prompt('请设置你的磁盘大小, 单位 GB, 必须大于20:', default=30, type=int)
+    request.set_Size(size)
+    result = do_action(client, request)
+    DiskId = result['DiskId']
+    config.set('DiskId', DiskId)
+
+def create_disk_from_snapshot(config):
+    client = config.create_api_client()
+    request = CreateDiskRequest.CreateDiskRequest()
+    request.set_DiskName("ml-data-disk")
+    request.set_DiskCategory("cloud_ssd")
+    request.set_SnapshotId(config.get('SnapshotId'))
+    request.set_ZoneId(config.get(['CreateInstanceParams', 'ZoneId']))
+    result = do_action(client, request)
+    DiskId = result['DiskId']
+    config.set('DiskId', DiskId)
+
 
 def wait_for_instance_status(config, status):
     """

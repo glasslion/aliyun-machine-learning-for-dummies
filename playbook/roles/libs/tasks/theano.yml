@@ -1,0 +1,8 @@
+---
+- name: Install theano
+  shell: "{{conda_binary}} install -y --no-update-deps theano pygpu"
+  become_user: ml
+
+- name: Copy theanorc file to instance
+  copy: src=theanorc dest=~/.theanorc
+  become_user: ml

@@ -1,0 +1,20 @@
+- name: Check if cudnn is downloaded
+  stat:
+    path: /mnt/ml/cache/libcudnn5.deb
+  register: downloaded
+  become_user: ml
+
+- name: Install cudnn
+  apt: deb="/mnt/ml/cache/libcudnn5.deb"
+  become: false
+  when: downloaded.stat.exists == True
+
+- name: Install cudnn-dev
+  apt: deb="/mnt/ml/cache/libcudnn5-dev.deb"
+  become: false
+  when: downloaded.stat.exists == True
+
+- name: Install cudnn-doc
+  apt: deb="/mnt/ml/cache/libcudnn5-doc.deb"
+  become: false
+  when: downloaded.stat.exists == True

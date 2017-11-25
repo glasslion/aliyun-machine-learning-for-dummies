@@ -1,5 +1,5 @@
 - name: Install tmux
-  apt: pkg=tmux state=installed update_cache=true
+  apt: pkg=tmux state=installed
 
 - name: Copy tmux conf
   copy: src=.tmux.conf dest=~/

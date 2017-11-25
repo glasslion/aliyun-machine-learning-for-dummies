@@ -1,0 +1,7 @@
+- name: Ensures .pip dir exists
+  file: path=~/.pip state=directory
+  become_user: ml
+
+- name: Copy pip.conf
+  template: src=pip.conf dest=~/.pip/pip.conf
+  become_user: ml

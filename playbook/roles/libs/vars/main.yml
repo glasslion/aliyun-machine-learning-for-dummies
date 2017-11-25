@@ -1,0 +1,2 @@
+conda_directory: /mnt/ml/libs/anaconda3
+conda_binary: "{{conda_directory}}/bin/conda"
