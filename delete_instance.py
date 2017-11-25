@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 import time
 
+from utils import Config, do_action, wait_for_instance_status
+
 import click
 from aliyunsdkecs.request.v20140526 import (DeleteInstanceRequest,
                                             StopInstanceRequest)
-from utils import Config, do_action, wait_for_instance_status
+
 
 def main():
     config = Config()

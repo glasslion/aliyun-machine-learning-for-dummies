@@ -64,6 +64,10 @@ class Config(object):
             self._secrets[name] = click.prompt(
                 'Please enter your {}'.format(human_name), type=str, hide_input=True)
 
+    def obtain_secrets(self):
+        self.obtain_secret('access_key_id')
+        self.obtain_secret('access_key_secret')
+
     def set(self, key, value):
         """
         Set a key/value config. If the key is a string, it acts like a dict.
