@@ -2,3 +2,4 @@ aliyun-python-sdk-core-v3; python_version >= '3'
 aliyun-python-sdk-core; python_version < '3'
 aliyun-python-sdk-ecs
 click
+six

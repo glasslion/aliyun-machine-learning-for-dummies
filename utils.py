@@ -285,7 +285,7 @@ class ImagesSelect(BaseConfigParameterSelect):
     request_cls = DescribeImagesRequest.DescribeImagesRequest
     items_getter = lambda self, x: x['Images']['Image']
     item_key = "ImageId"
-    select_item_formatter = lambda self, x: x['OSName']
+    select_item_formatter = lambda self, x: "{} {}".format(x['OSName'], x['Description'])
     select_sorting = 'OSName'
 
     def set_request_parameters(self, request):
