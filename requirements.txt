@@ -5,3 +5,4 @@ click
 mkdocs
 tabulate
 tenacity
+six

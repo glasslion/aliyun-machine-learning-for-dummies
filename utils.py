@@ -73,6 +73,10 @@ class Config(object):
             self._secrets[name] = click.prompt(
                 'Please enter your {}'.format(human_name), type=str, hide_input=True)
 
+    def obtain_secrets(self):
+        self.obtain_secret('access_key_id')
+        self.obtain_secret('access_key_secret')
+
     def set(self, key, value):
         """
         Set a key/value config. If the key is a string, it acts like a dict.
@@ -302,7 +306,7 @@ class ImagesSelect(BaseConfigParameterSelect):
     request_cls = DescribeImagesRequest.DescribeImagesRequest
     items_getter = lambda self, x: x['Images']['Image']
     item_key = "ImageId"
-    select_item_formatter = lambda self, x: x['OSName']
+    select_item_formatter = lambda self, x: "{} {}".format(x['OSName'], x['Description'])
     select_sorting = 'OSName'
 
     def set_request_parameters(self, request):
