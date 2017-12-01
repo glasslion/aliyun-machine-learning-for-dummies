@@ -20,6 +20,7 @@ from aliyunsdkecs.request.v20140526 import (DescribeDisksRequest,
                                             DescribeKeyPairsRequest,
                                             DescribeRegionsRequest,
                                             DescribeSnapshotsRequest,
+                                            DescribeVSwitchesRequest,
                                             DescribeZonesRequest,
                                             DescribeSecurityGroupsRequest)
 
@@ -240,6 +241,18 @@ class SecurityGroupsSelect(BaseConfigParameterSelect):
     items_getter = lambda self, x: x['SecurityGroups']['SecurityGroup']
     item_key = "SecurityGroupId"
     select_item_formatter = lambda self, x: "{}({})".format(x['SecurityGroupName'], x['SecurityGroupId'])
+
+    def handle_selected_item(self, item, config):
+        self.set_VSwitchId(item['VpcId'], config)
+
+    def set_VSwitchId(self, vpc_id, config):
+        request = DescribeVSwitchesRequest.DescribeVSwitchesRequest()
+        request.set_VpcId(vpc_id)
+        client = config.create_api_client()
+        result = do_action(client, request)
+        item = result['VSwitches']['VSwitch'][0]
+        config.set(['CreateInstanceParams', 'VSwitchId'], item['VSwitchId'])
+
 
 class DisksSelect(BaseConfigParameterSelect):
     name = "挂载的磁盘"
