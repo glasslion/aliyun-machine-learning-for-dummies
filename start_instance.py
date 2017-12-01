@@ -28,7 +28,7 @@ def main(interactive):
         config.config_via_prompt()
     else:
         config.load()
-
+    config.save()
     should_create_new = True
     if config.get('InstanceId'):
         answer = click.prompt("在配置文件中找到一个已存在的实例, 是使用这个实例(y), 还是创建一个新的实例(n)? [y/n]")
