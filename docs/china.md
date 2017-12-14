@@ -8,5 +8,5 @@
 
 这样可以极大地加快一些机器学习， 科学计算相关的库的安装速度。
 
-### https 可能无法访问问题
+### 部分运营商 国外 IP https 可能无法访问问题
 国内部分运营商（例如上海电信) 会屏蔽通过 https 直连海外 ip。 打开 `jupyter_notebook_config.py` 注释掉以 `c.NotebookApp.certfile`, `c.NotebookApp.keyfile` 开头的两行， 即可让 Jupyter Notebbok 使用 http 而非 https 模式。

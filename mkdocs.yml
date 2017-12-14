@@ -5,6 +5,7 @@ pages:
     - 怎样选择最合适的实例: choose_instance.md
     - 实战: hands_on.md
     - 针对国内网络的优化: china.md
+    - 踩过的一些坑: trouble_shooting.md
     - 和 AWS EC2 的比较: aws.md
 theme:
   name: 'material'
