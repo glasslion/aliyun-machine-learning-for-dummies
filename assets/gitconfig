@@ -1,0 +1,11 @@
+[user]
+    email = %(git_user)s
+    name = %(git_email)s
+
+[push]
+    default = simple
+
+[alias]
+    st = status
+    ci = commit --verbose
+    co = checkout

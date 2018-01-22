@@ -1,0 +1,12 @@
+{
+{% if backend == 'tf' %}
+    "image_data_format": "channels_first",
+    "backend": "tensorflow",
+{% else %}
+    "image_data_format": "channels_last",
+    "backend": "theano",
+{% endif %}
+    "epsilon": 1e-07,
+    "floatx": "float32"
+
+}
