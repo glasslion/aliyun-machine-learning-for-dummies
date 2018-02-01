@@ -23,9 +23,9 @@ def main():
     answer = click.prompt("是否要为当前的数据盘创建一个快照, 然后删除数据盘， 以节约费用? [y/n]")
     if answer == 'y':
         OldSnapshotId = config.get('SnapshotId')
-        time.sleep(3)
+        time.sleep(20)
         create_snapshot(config)
-        time.sleep(10)
+        time.sleep(20)
         delete_disk(config)
         if OldSnapshotId:
             delete_snapshot(config, OldSnapshotId)
