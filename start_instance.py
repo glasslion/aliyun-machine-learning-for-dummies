@@ -18,16 +18,16 @@ from aliyunsdkecs.request.v20140526 import (AllocatePublicIpAddressRequest,
 
 @click.command()
 @click.option(
-    '--interactive', '-i', default=False, is_flag=True,
-    help='Interactive mode，allow user to input/select ecs instance parameters interactively')
-def main(interactive):
+    '--silent', '-s', default=False, is_flag=True,
+    help='Non-interactive mode，configs are loaded from config.json file.')
+def main(silent):
     config = Config()
     config.obtain_secret('access_key_id')
     config.obtain_secret('access_key_secret')
-    if interactive:
-        config.config_via_prompt()
-    else:
+    if silent:
         config.load()
+    else:
+        config.config_via_prompt()
     config.save()
     should_create_new = True
     if config.get('InstanceId'):
