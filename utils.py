@@ -236,6 +236,7 @@ class InstanceTypeSelect(BaseConfigParameterSelect):
     select_item_formatter = lambda self, x: x['InstanceTypeId']
 
     def set_request_parameters(self, request):
+        # other common instace type are: gn5i, sn2, sn1
         request.set_InstanceTypeFamily('ecs.gn5')
 
 class SecurityGroupsSelect(BaseConfigParameterSelect):
