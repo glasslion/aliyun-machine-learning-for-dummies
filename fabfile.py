@@ -22,12 +22,12 @@ def bootstrap():
         ssh_public_keys=os.path.expanduser('~/.ssh/id_rsa.pub')
     )
     require.users.sudoer('ml')
-    # setup_ssh()
-    # setup_external_disks()
-    # setup_sys_packages()
-    # setup_nvdia_driver()
-    # optimize_gpu()
-    # setup_cuda()
+    setup_ssh()
+    setup_external_disks()
+    setup_sys_packages()
+    setup_nvdia_driver()
+    optimize_gpu()
+    setup_cuda()
     setup_conda()
     setup_pip()
     setup_jupyter()
@@ -163,7 +163,7 @@ def setup_nvdia_driver():
     if not fabric.contrib.files.exists(NVDIA_DRIVER_PATH):
         with settings(user='ml'):
             download(
-                'http://us.download.nvidia.com/tesla/384.81/NVIDIA-Linux-x86_64-384.81.run',
+                'http://us.download.nvidia.com/tesla/390.30/NVIDIA-Linux-x86_64-390.30.run',
                 NVDIA_DRIVER_PATH,
             )
         run('sh {} -q -a -n -s'.format(NVDIA_DRIVER_PATH))
@@ -340,3 +340,10 @@ def install_keras():
                 }
             )
 
+
+@task
+def install_ossutil():
+    with cd('/usr/local/bin'):
+        url  = 'http://docs-aliyun.cn-hangzhou.oss.aliyun-inc.com/assets/attach/50452/cn_zh/1516454058701/ossutil64?spm=a2c4g.11186623.2.6.FLcLvd'
+        run('wget {} -O ossutil'.format(url))
+        run('chmod a+x ossutil')
