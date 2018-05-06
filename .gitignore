@@ -110,3 +110,5 @@ playbook/*.retry
 playbook/**/id_rsa
 playbook/**/id_rsa.pub
 playbook/**/jupyter_notebook_config.py
+assets/**/id_rsa
+assets/**/id_rsa.pub
