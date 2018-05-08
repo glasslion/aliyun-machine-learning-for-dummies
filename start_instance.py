@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, print_function, unicode_literals
 import json
+import time
 
 # Due to a bug in the aliyun sdk, https://github.com/aliyun/aliyun-openapi-python-sdk/issues/43
 # this import must appear before any aliyun sdk imports
@@ -45,6 +46,8 @@ def main(silent):
         create_disk_from_snapshot(config)
     attach_disk(config)
 
+    save_instance_info(config)
+    time.sleep(10)
     start_instance(config)
     save_instance_info(config)
 
