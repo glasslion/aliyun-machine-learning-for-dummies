@@ -4,7 +4,7 @@ import os
 import fabric
 from fabric.api import cd, env, run, settings, task
 from fabric.operations import put, prompt
-from fabric.contrib.files import upload_template
+from fabric.contrib.files import upload_template, exists as file_exists
 import fabtools
 from fabtools import require
 
@@ -38,6 +38,7 @@ def bootstrap():
     install_keras()
 
 
+
 # Help Functions:
 # ---------------------------------------------------------
 
@@ -62,6 +63,8 @@ CONDA_PATH = '/mnt/ml/libs/anaconda3'
 @task
 def setup_ssh():
     with settings(user='ml'):
+        if file_exists('~/.ssh/id_rsa.pub'):
+            return
         require.files.directory(
             '~/.ssh', owner='ml', group='ml', mode='0700'
         )
@@ -105,12 +108,15 @@ def setup_sys_packages():
     run('update-alternatives --set editor /usr/bin/vim.basic')
 
     with settings(user='ml'):
+        if file_exists('/home/ml/.tmux.conf'):
+            return
+
         # tmux conf
         put('assets/tmux.conf', '~/.tmux.conf')
 
         # git config
-        git_user = prompt('Enter your git username')
-        git_email = prompt('Enter your git email')
+        git_user = os.environ.get('GIT_USER') or prompt('Enter your git username')
+        git_email = os.environ.get('GIT_EMAIL') or prompt('Enter your git email')
         upload_template(
             'assets/gitconfig',
             '~/.gitconfig',
@@ -123,18 +129,23 @@ def setup_sys_packages():
 
 @task
 def setup_external_disks():
+    if file_exists('/mnt/ml/cache'):
+        return
     require.files.directories(
         ['/mnt/ml', '/mnt/data'],
         owner='ml'
     )
 
-    has_2_disks = fabric.contrib.files.exists('/dev/vdc')
-    if not fabric.contrib.files.exists('/dev/vdb1'):
+    if not file_exists('/dev/vdb1'):
         run('parted -a optimal /dev/vdb mklabel gpt mkpart primary ext4 0% 100%')
         run('mkfs.ext4 /dev/vdb1')
-    if has_2_disks:
+    if file_exists('/dev/vdc') and not file_exists('/dev/vdc1'):
         run('parted -a optimal /dev/vdc mkpart primary ext4 0% 100%')
         run('mkfs.ext4 /dev/vdc1')
+
+    has_2_disks = file_exists('/dev/vdc')
+    if has_2_disks:
+
         if not fabtools.disk.ismounted('/dev/vdb1'):
             fabtools.disk.mount('/dev/vdb1', '/mnt/data')
             fabtools.disk.mount('/dev/vdc1', '/mnt/ml')
