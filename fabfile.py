@@ -128,9 +128,24 @@ def setup_sys_packages():
 
 
 @task
+def mount_disks():
+    """
+    Mount external disk.
+    It should be called after every restart
+    """
+    has_2_disks = file_exists('/dev/vdc')
+    if has_2_disks:
+
+        if not fabtools.disk.ismounted('/dev/vdb1'):
+            fabtools.disk.mount('/dev/vdb1', '/mnt/data')
+            fabtools.disk.mount('/dev/vdc1', '/mnt/ml')
+    else:
+        if not fabtools.disk.ismounted('/dev/vdb1'):
+            fabtools.disk.mount('/dev/vdb1', '/mnt/ml')
+
+
+@task
 def setup_external_disks():
-    if file_exists('/mnt/ml/cache'):
-        return
     require.files.directories(
         ['/mnt/ml', '/mnt/data'],
         owner='ml'
@@ -143,35 +158,30 @@ def setup_external_disks():
         run('parted -a optimal /dev/vdc mkpart primary ext4 0% 100%')
         run('mkfs.ext4 /dev/vdc1')
 
-    has_2_disks = file_exists('/dev/vdc')
-    if has_2_disks:
-
-        if not fabtools.disk.ismounted('/dev/vdb1'):
-            fabtools.disk.mount('/dev/vdb1', '/mnt/data')
-            fabtools.disk.mount('/dev/vdc1', '/mnt/ml')
-    else:
-        if not fabtools.disk.ismounted('/dev/vdb1'):
-            fabtools.disk.mount('/dev/vdb1', '/mnt/ml')
+    mount_disks()
 
     require.files.directories(
-        ['/mnt/ml/cache', '/mnt/ml/lib', '/mnt/ml/working'],
+        ['/mnt/ml/cache', '/mnt/ml/libs', '/mnt/ml/working'],
         owner='ml',
     )
 
 
 @task
 def setup_nvdia_driver():
-    # Blacklist nouveau driver
-    put(
-        'assets/blacklist-nouveau.conf',
-        '/etc/modprobe.d/blacklist-nouveau.conf'
-    )
-    # Disable the Kernel nouveau
-    run('echo options nouveau modeset=0 | tee -a /etc/modprobe.d/nouveau-kms.conf')
-    run('update-initramfs -u')
-    run("shutdown -r +0")
-    NVDIA_DRIVER_PATH = '/mnt/ml/cache/nvdia_driver.run'
-    if not fabric.contrib.files.exists(NVDIA_DRIVER_PATH):
+    if not file_exists('/etc/modprobe.d/blacklist-nouveau.conf'):
+        # Blacklist nouveau driver
+        put(
+            'assets/blacklist-nouveau.conf',
+            '/etc/modprobe.d/blacklist-nouveau.conf'
+        )
+        # Disable the Kernel nouveau
+        run('echo options nouveau modeset=0 | tee -a /etc/modprobe.d/nouveau-kms.conf')
+        run('update-initramfs -u')
+        run("shutdown -r +0")
+
+    mount_disks()
+    NVDIA_DRIVER_PATH = '/mnt/ml/cache/nvidia_driver.run'
+    if not file_exists('/usr/bin/nvidia-smi'):
         with settings(user='ml'):
             download(
                 'http://us.download.nvidia.com/tesla/390.30/NVIDIA-Linux-x86_64-390.30.run',
@@ -184,22 +194,24 @@ def setup_nvdia_driver():
 def setup_cuda():
     if fabric.contrib.files.exists('/usr/local/cuda/bin'):
         return
-    CUDA_DOWNLOAD_PATH = '/mnt/ml/cache/cuda.deb'
+    require.deb.packages([
+        'build-essential',
+        'freeglut3-dev',
+        'libx11-dev',
+        'libxmu-dev',
+        'libxi-dev',
+        'libgl1-mesa-glx',
+        'libglu1-mesa',
+        'libglu1-mesa-dev',
+    ])
+    CUDA_DOWNLOAD_PATH = '/mnt/ml/cache/cuda.run'
     with settings(user='ml'):
         download(
-            'https://developer.nvidia.com/compute/cuda/8.0/Prod2/local_installers/cuda-repo-ubuntu1604-8-0-local-ga2_8.0.61-1_amd64-deb',
+            'https://developer.nvidia.com/compute/cuda/9.1/Prod/local_installers/cuda_9.1.85_387.26_linux',
             CUDA_DOWNLOAD_PATH,
         )
 
-    run('dpkg -i {}'.format(CUDA_DOWNLOAD_PATH))
-    fabtools.require.deb.uptodate_index(max_age=0)
-    require.deb.packages([
-        'build-essential',
-        'dkms',
-        'linux-generic',
-        'cuda',
-    ])
-
+    run('sh {} -silent'.format(CUDA_DOWNLOAD_PATH))
     # ADD cuda to PATH bashrc
     with settings(user='ml'):
         for line in [
@@ -211,6 +223,7 @@ def setup_cuda():
                 '~/.bashrc', line
             )
     run("shutdown -r +0")
+    mount_disks()
 
 
 @task
@@ -261,11 +274,11 @@ def setup_jupyter():
     with settings(user='ml'):
         with cd(os.path.join(CONDA_PATH, 'bin')):
             # Install nb_conda
-            run('./conda install -y jupyter nb_conda nb_conda_kernels -c conda-forge')
-            # Enable conda kernels
-            run('./python -m nb_conda_kernels.install --enable')
-            # Install notedown
-            run('./pip install notedown')
+            # run('./conda install -y jupyter nb_conda nb_conda_kernels -c conda-forge')
+            # # Enable conda kernels
+            # run('./python -m nb_conda_kernels.install --enable')
+            # # Install notedown
+            # run('./pip install notedown')
             # ssl key
             run('openssl req -x509 -nodes -days 365 -newkey rsa:1024 -keyout ~/.jupyter/mykey.key -out ~/.jupyter/mycert.pem -subj  "/C=NL"')
 
