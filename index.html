@@ -92,7 +92,7 @@
             
               
             
-            首页
+            缘起
           
         </span>
       </div>
@@ -210,9 +210,36 @@
       
     
     
-    <a href="." title="首页" class="md-nav__link md-nav__link--active">
-      首页
+      <label class="md-nav__link md-nav__link--active" for="toc">
+        缘起
+      </label>
+    
+    <a href="." title="缘起" class="md-nav__link md-nav__link--active">
+      缘起
     </a>
+    
+      
+<nav class="md-nav md-nav--secondary">
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="toc">目录</label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" title="缘起" class="md-nav__link">
+    缘起
+  </a>
+  
+</li>
+      
+      
+      
+    </ul>
+  
+</nav>
     
   </li>
 
@@ -306,6 +333,20 @@
     
   
   
+    <label class="md-nav__title" for="toc">目录</label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" title="缘起" class="md-nav__link">
+    缘起
+  </a>
+  
+</li>
+      
+      
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -320,6 +361,17 @@
                 
                 
                 <h1 id="ecs">阿里云 ECS 机器学习懒人包</h1>
+<h2 id="_1">缘起</h2>
+<p>随着机器学习， 特别是深度学习的大热， 吸引了很多人开始学习机器学习。</p>
+<p>这方面的公开课(Coursera, Udacity, Stanford, CMU...)很多， 对于有一定编程基础和大学线性代数、高数的同学来说， 自学完全不成问题。</p>
+<p>然而很多人在开始训练深度网络模型时， 就会被硬件(尤其是 GPU)浇上一盆冷水。</p>
+<ul>
+<li>很多人的电脑并没有适合深度学习的显卡,  此处AMD的显卡玩家收到了成吨伤害</li>
+<li>有些人的机器是几年前买的， 已经跑不动主流的模型；</li>
+<li>笔记本用户尤其惨， 要升级显卡很困难， 而且就算显卡性能足够了， 往往也会面临散热等困难。</li>
+</ul>
+<p>这时， 使用带 GPU 的云主机就成了一个不错的替代方案。 国外也早已有很多使用 AWS EC2 进行机器学习的教程和案例。 2017年10月， 阿里云新推出了 GPU 竞价实例, 早期的性价比非常高。 我也乘机练了不少丹， 受益匪浅。</p>
+<p>竞价实例虽然价格便宜， 但是按照使用时间计费的， 用完即删。 如果每次使用都要去网页上手动购买的话，是很浪费时间和枯燥的。 此外每次购买到的实例是全新的，需要重新安装机器学习环境。 这个项目可以帮你自动化购买阿里云实例和搭建机器学习环境。 还提供了辅助降本查询阿里云各个区域里， 哪里实例的价格最便宜。 希望能帮助到大家！</p>
                 
                   
                 
