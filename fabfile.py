@@ -273,12 +273,6 @@ def setup_conda():
 def setup_jupyter():
     with settings(user='ml'):
         with cd(os.path.join(CONDA_PATH, 'bin')):
-            # Install nb_conda
-            # run('./conda install -y jupyter nb_conda nb_conda_kernels -c conda-forge')
-            # # Enable conda kernels
-            # run('./python -m nb_conda_kernels.install --enable')
-            # # Install notedown
-            # run('./pip install notedown')
             # ssl key
             run('openssl req -x509 -nodes -days 365 -newkey rsa:1024 -keyout ~/.jupyter/mykey.key -out ~/.jupyter/mycert.pem -subj  "/C=NL"')
 
