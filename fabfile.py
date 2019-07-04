@@ -272,13 +272,13 @@ def setup_conda():
 @task
 def setup_jupyter():
     with settings(user='ml'):
+        require.files.directory('/home/ml/.jupyter')
         with cd(os.path.join(CONDA_PATH, 'bin')):
             # ssl key
             run('openssl req -x509 -nodes -days 365 -newkey rsa:1024 -keyout ~/.jupyter/mykey.key -out ~/.jupyter/mycert.pem -subj  "/C=NL"')
 
-        require.files.directory('~/.jupyter')
         fabric.operations.put(
-           'assets/jupyter_notebook_config.py',
+            './assets/jupyter_notebook_config.py',
             '~/.jupyter/jupyter_notebook_config.py'
         )
 

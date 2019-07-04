@@ -36,8 +36,14 @@ def query_price(config, region, zone, instance_type):
 
 
 @click.command()
-@click.option('--max-price', type=int, default=1000)
-def main(max_price):
+@click.option(
+    '--max-price', '-m', type=float, default=1000,
+    help="max price (per hour)")
+@click.option(
+    '--type', '-t', default='gn', help="Instance type",
+    type=str)
+    # type=click.Choice(['gn', 'r5', 'se1', 'g5', 'i2']))
+def main(max_price, type):
     config = Config()
     config.obtain_secret('access_key_id')
     config.obtain_secret('access_key_secret')
@@ -53,7 +59,7 @@ def main(max_price):
             zones = get_zones(client)
             for zone in zones:
                 ins_types = zones[0]['AvailableInstanceTypes']['InstanceTypes']
-                ins_types = [t for t in ins_types if t.startswith('ecs.gn')]
+                ins_types = [t for t in ins_types if t.startswith('ecs.{}'.format(type))]
                 if 'ecs.gn5-c4g1.xlarge' not in ins_types:
                     # 由于阿里云方面的bug, DescribeZonesRequest 返回的 AvailableInstanceTypes 可能不全
                     # 这里手动插入些最常用的实例类型
