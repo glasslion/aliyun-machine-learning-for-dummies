@@ -22,7 +22,13 @@ from aliyunsdkecs.request.v20140526 import (DescribeDisksRequest,
                                             DescribeSnapshotsRequest,
                                             DescribeVSwitchesRequest,
                                             DescribeZonesRequest,
-                                            DescribeSecurityGroupsRequest)
+                                            DescribeSecurityGroupsRequest,
+                                            CreateSecurityGroupRequest,
+                                            CreateVpcRequest,
+                                            CreateVSwitchRequest,
+                                            AuthorizeSecurityGroupRequest,
+                                            ImportKeyPairRequest,)
+
 
 
 logger = logging.getLogger(__name__)
@@ -125,7 +131,7 @@ class Config(object):
         )
         RegionIdSelect().show(config=self, client=client)
         InstanceTypeSelect().show(config=self)
-        SecurityGroupsSelect().show(config=self)
+
         msg = "ECS实例自带的磁盘， 在实例被删除后， 也会被删除。为了保存你的工作， 你需要额外再挂载一块磁盘。\
 你可以选择是创建一块全新的磁盘(n)， 还是重用现有的一块磁盘(e)，或者是使用快照创建一块新的磁盘(s), [n/e/s]"
         answer = click.prompt(msg).lower()
@@ -137,6 +143,7 @@ class Config(object):
             ZonesSelect().show(config=self)
             SnapshotsSelect().show(config=self)
             create_disk_from_snapshot(config=self)
+        SecurityGroupsSelect().show(config=self)
         KeyPairsSelect().show(config=self)
         ImagesSelect().show(config=self)
 
@@ -184,6 +191,7 @@ def do_action(client, request):
 
 class BaseConfigParameterSelect(object):
     def show(self, config, client=None):
+        self.config = config
         click.echo(click.style('正在配置 ECS 实例的{} ...', fg='green').format(self.name))
         param = config.get(self.key)
         if param:
@@ -199,6 +207,7 @@ class BaseConfigParameterSelect(object):
 
         if client is None:
             client = config.create_api_client()
+        self.client = client
         api_result = do_action(client, request)
         items = self.items_getter(api_result)
         if getattr(self, 'select_sorting', None):
@@ -206,6 +215,12 @@ class BaseConfigParameterSelect(object):
         select_list = '\n'.join('[{}] - {}'.format(
             idx, self.select_item_formatter(item)
         ) for idx, item in enumerate(items))
+
+        if len(select_list)==0:
+            self.fix_empty_select_list()
+            time.sleep(1)
+            return self.show(config, client)
+
         msg = '可选的 {}:\n{}\n请选择实例的 {}（序号）'.format(self.name, select_list, self.name)
         idx = click.prompt(msg, type=int)
         param = items[idx][self.item_key]
@@ -217,6 +232,10 @@ class BaseConfigParameterSelect(object):
 
     def handle_selected_item(self, item, config):
         pass
+
+    def fix_empty_select_list(self):
+        raise ValueError('Empty Select List !!!')
+
 
 class RegionIdSelect(BaseConfigParameterSelect):
     name = "地域"
@@ -237,7 +256,8 @@ class InstanceTypeSelect(BaseConfigParameterSelect):
 
     def set_request_parameters(self, request):
         # other common instace type are: gn5i, sn2, sn1
-        request.set_InstanceTypeFamily('ecs.gn5')
+        request.set_InstanceTypeFamily('ecs.c5')
+
 
 class SecurityGroupsSelect(BaseConfigParameterSelect):
     name = "安全组"
@@ -250,9 +270,46 @@ class SecurityGroupsSelect(BaseConfigParameterSelect):
     def handle_selected_item(self, item, config):
         self.set_VSwitchId(item['VpcId'], config)
 
+    def fix_empty_select_list(self):
+        # 因为创建安全组时需要指定 VpcId, 这里偷个懒， 假定安全组为空时， vpc 和 vswitch
+        # 也为空， 创建一个新的
+        self.create_vpc()
+        self.create_vswitch()
+        self.create_sg()
+        self.add_sg_rule()
+
+    def create_sg(self):
+        request = CreateSecurityGroupRequest.CreateSecurityGroupRequest()
+        request.set_VpcId(self.VpcId)
+        result = do_action(self.client, request)
+        self.SecurityGroupId = result['SecurityGroupId']
+
+    def add_sg_rule(self):
+        # 增加一条安全组入方向规则
+        request = AuthorizeSecurityGroupRequest.AuthorizeSecurityGroupRequest()
+        request.set_IpProtocol("tcp")
+        request.set_PortRange("8880/8888")
+        request.set_SecurityGroupId(self.SecurityGroupId)
+        request.set_SourceCidrIp('0.0.0.0/0')
+
+    def create_vpc(self):
+        request = CreateVpcRequest.CreateVpcRequest()
+        request.set_VpcName('ml-auto-vpc')
+        request.set_CidrBlock('192.168.0.0/16')
+        result = do_action(self.client, request)
+        self.VpcId = result['VpcId']
+
+    def create_vswitch(self):
+        request = CreateVSwitchRequest.CreateVSwitchRequest()
+        request.set_CidrBlock('192.168.0.0/24')
+        request.set_VpcId(self.VpcId)
+        ZoneId = self.config.get(['CreateInstanceParams', 'ZoneId'])
+        request.set_ZoneId(ZoneId)
+        result = do_action(self.client, request)
+
     def set_VSwitchId(self, vpc_id, config):
         request = DescribeVSwitchesRequest.DescribeVSwitchesRequest()
-        request.set_VpcId(vpc_id)
+        request.set_VpcId(self.VpcId)
         client = config.create_api_client()
         result = do_action(client, request)
         item = result['VSwitches']['VSwitch'][0]
@@ -299,6 +356,19 @@ class KeyPairsSelect(BaseConfigParameterSelect):
     items_getter = lambda self, x: x['KeyPairs']['KeyPair']
     item_key = "KeyPairName"
     select_item_formatter = lambda self, x: x['KeyPairName']
+
+    def fix_empty_select_list(self):
+        self.import_key()
+
+    def import_key(self):
+        request = ImportKeyPairRequest.ImportKeyPairRequest()
+        request.set_KeyPairName('ml-sshkey')
+        key_path = os.path.expanduser('~/.ssh/id_rsa.pub')
+        with open(key_path) as f:
+            keybody = f.read()
+
+        request.set_PublicKeyBody(keybody)
+        do_action(self.client, request)
 
 
 class ImagesSelect(BaseConfigParameterSelect):
