@@ -23,8 +23,8 @@ class DisksSelect(BaseConfigParameterSelect):
     def set_request_parameters(self, request):
         request.set_Portable('true')
 
-    def handle_selected_item(self, item, config):
-        config.set(('CreateInstanceParams', 'ZoneId'), item['ZoneId'])
+    def handle_selected_item(self, item):
+        self.config.set(('CreateInstanceParams', 'ZoneId'), item['ZoneId'])
 
 
 class SnapshotsSelect(BaseConfigParameterSelect):

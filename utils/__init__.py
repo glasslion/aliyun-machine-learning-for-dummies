@@ -88,14 +88,14 @@ class Config(object):
         else:
             self._config[key] = value
 
-    def get(self, key):
+    def get(self, key, default=None):
         if isinstance(key, (list, tuple)):
             node = self._config
             for k in key:
-                node = node.get(k, {})
+                node = node.get(k, {}, default)
             return node
         else:
-            return self._config.get(key)
+            return self._config.get(key, default)
 
     def pop(self, key, default=None):
         if isinstance(key, (list, tuple)):
@@ -111,34 +111,25 @@ class Config(object):
         Get ecs configs via commandline prompts
         """
         self.load()
-
-        # We need a default region id to initialize the api client,
-        # then query other available regions
-        default_region_id = 'cn-hangzhou'
-
-        client = client = AcsClient(
-            self._secrets['access_key_id'],
-            self._secrets['access_key_secret'],
-            default_region_id,
-        )
-        RegionIdSelect().show(config=self, client=client)
-        InstanceTypeSelect().show(config=self)
+        client = self.create_api_client()
+        RegionIdSelect(self).show()
+        InstanceTypeSelect(self).show()
 
         msg = "ECS实例自带的磁盘， 在实例被删除后， 也会被删除。为了保存你的工作， 你需要额外再挂载一块磁盘。\
 你可以选择是创建一块全新的磁盘(n)， 还是重用现有的一块磁盘(e)，或者是使用快照创建一块新的磁盘(s), [n/e/s]"
         answer = click.prompt(msg).lower()
         if answer == 'n':
-            ZonesSelect().show(config=self)
+            ZonesSelect(self).show()
             create_empty_disk(config=self)
         elif answer == 'e':
-            DisksSelect().show(config=self)
+            DisksSelect(self).show()
         else:
-            ZonesSelect().show(config=self)
-            SnapshotsSelect().show(config=self)
+            ZonesSelect(self).show()
+            SnapshotsSelect(self).show()
             create_disk_from_snapshot(config=self)
-        SecurityGroupsSelect().show(config=self)
-        KeyPairsSelect().show(config=self)
-        ImagesSelect().show(config=self)
+        SecurityGroupsSelect(self).show()
+        KeyPairsSelect(self).show()
+        ImagesSelect(self).show()
 
         InstanceName = click.prompt('请输入你的实例名称（便于标识实例）:', default='ecs-ml-01', type=str)
         self.set(['CreateInstanceParams','InstanceName'], InstanceName)
@@ -163,7 +154,10 @@ class Config(object):
 
     def create_api_client(self, region_id=None):
         if region_id is None:
-            region_id = self.get('RegionId')
+            # We need a default region id to initialize the api client,
+            # then query other available regions
+            default_region_id = 'cn-hangzhou'
+            region_id = self.get('RegionId', default_region_id)
         return AcsClient(
             self._secrets['access_key_id'],
             self._secrets['access_key_secret'],

@@ -24,10 +24,10 @@ class SecurityGroupsSelect(BaseConfigParameterSelect):
     item_key = "SecurityGroupId"
     select_item_formatter = lambda self, x: "{}({})".format(x['SecurityGroupName'], x['SecurityGroupId'])
 
-    def handle_selected_item(self, item, config):
-        self.set_VSwitchId(item['VpcId'], config)
+    def handle_selected_item(self, item):
+        self.set_VSwitchId(item['VpcId'])
 
-    def fix_empty_select_list(self):
+    def fix_empty_items(self):
         # 因为创建安全组时需要指定 VpcId, 这里偷个懒， 假定安全组为空时， vpc 和 vswitch
         # 也为空， 创建一个新的
         print('正在创建 VPC 请稍等 ...')
@@ -69,13 +69,12 @@ class SecurityGroupsSelect(BaseConfigParameterSelect):
         request.set_ZoneId(ZoneId)
         result = do_action(self.client, request)
 
-    def set_VSwitchId(self, vpc_id, config):
+    def set_VSwitchId(self, vpc_id):
         request = DescribeVSwitchesRequest.DescribeVSwitchesRequest()
         request.set_VpcId(self.VpcId)
-        client = config.create_api_client()
-        result = do_action(client, request)
+        result = do_action(self.client, request)
         item = result['VSwitches']['VSwitch'][0]
-        config.set(['CreateInstanceParams', 'VSwitchId'], item['VSwitchId'])
+        self.config.set(['CreateInstanceParams', 'VSwitchId'], item['VSwitchId'])
 
 
 class KeyPairsSelect(BaseConfigParameterSelect):
@@ -86,7 +85,7 @@ class KeyPairsSelect(BaseConfigParameterSelect):
     item_key = "KeyPairName"
     select_item_formatter = lambda self, x: x['KeyPairName']
 
-    def fix_empty_select_list(self):
+    def fix_empty_items(self):
         self.import_key()
 
     def import_key(self):
