@@ -12,25 +12,30 @@ class BaseConfigParameterSelect(object):
         self.config = config
         self.client = config.create_api_client()
 
-    def show(self):
-        click.echo(click.style('正在配置 ECS 实例的{} ...', fg='green').format(self.name))
-        param = self.config.get(self.key)
-        if param:
-            msg = "检测到你上次所使用的{}是 {}, 是否保留这个设置， 还是重新选择? [保留 y/重选 n]".format(
-                self.name, click.style(param, fg="magenta")
-            )
-            answer = click.prompt(msg, default='y').lower()
-            if answer == 'y':
-                return param
+    def show(self, refresh=False):
+        if not refresh:
+            click.echo(click.style('正在配置 ECS 实例的{} ...', fg='green').format(self.name))
+            param = self.config.get(self.key)
+            if param:
+                msg = "检测到你上次所使用的{}是 {}, 是否保留这个设置， 还是重新选择? [保留 y/重选 n]".format(
+                    self.name, click.style(param, fg="magenta")
+                )
+                answer = click.prompt(msg, default='y').lower()
+                if answer == 'y':
+                    return param
 
         items = self.get_items()
         if len(items)==0:
             self.fix_empty_items()
             time.sleep(1)
-            return self.show()
+            return self.show(refresh=True)
 
         formatted = self.format_items(items)
-        idx = click.prompt(formatted, type=int)
+
+        idx = click.prompt(formatted, type=int, default=-1, show_default=False)
+        if idx == -1:
+            return self.show(refresh=True)
+
         param = items[idx][self.item_key]
         self.config.set(self.key, param)
         self.handle_selected_item(items[idx])
@@ -65,7 +70,7 @@ class BaseConfigParameterSelect(object):
              for idx, item in enumerate(items)
         ]
         select_list = '\n'.join(color_text(lines))
-        formatted = '可选的 {}:\n{}\n请选择实例的 {}（序号）'.format(
+        formatted = '可选的 {}:\n{}\n请选择实例的 {}（序号） 回车来重新刷新本菜单'.format(
             self.name, select_list, self.name)
         return formatted
 

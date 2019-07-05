@@ -92,8 +92,8 @@ class Config(object):
         if isinstance(key, (list, tuple)):
             node = self._config
             for k in key:
-                node = node.get(k, {}, default)
-            return node
+                node = node.get(k, {})
+            return node or default
         else:
             return self._config.get(key, default)
 
